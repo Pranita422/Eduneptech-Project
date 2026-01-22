@@ -1,0 +1,22 @@
+[
+  {
+    "_id": "69479c417a7edcf0fc3baf71",
+    "course": "B.Sc Information Technology"
+  },
+  {
+    "_id": "6947b34337ff0726e2fbc798",
+    "course": "B.Sc Information Technology"
+  },
+  {
+    "_id": "fy-bsc-cs",
+    "course": "B.Sc Computer Science"
+  },
+  {
+    "_id": "sy-bsc-cs",
+    "course": "B.Sc Computer Science"
+  },
+  {
+    "_id": "694e10742fc1f46ad67b107d",
+    "program": "B.Sc Data Science"
+  }
+]

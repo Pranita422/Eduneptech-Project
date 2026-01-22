@@ -1,0 +1,17 @@
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/*img {
+  animation: float 4s ease-in-out infinite;
+}*/
+
+nav ul li a {
+  font-weight: 500;
+  transition: color 0s;
+}
+
+nav ul li a:hover {
+  color: #FFD700;
+}
