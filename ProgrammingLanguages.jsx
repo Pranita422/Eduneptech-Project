@@ -207,7 +207,7 @@ const currentIndex = currentTopic
 </h2>
 
 <div className={styles.contentBody}>
-  {currentTopic.description
+  {currentTopic.theory
     ?.split("\n\n")
     .map((paragraph, idx) => (
       <p key={idx}>{paragraph}</p>

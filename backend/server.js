@@ -10,7 +10,7 @@ const path = require("path");
 dotenv.config({ path: path.join(__dirname, ".env") });
 
 console.log("[Server] Starting...");
-console.log("[Server] MONGO_URL detected:", process.env.MONGO_URL ? "Yes (Length: " + process.env.MONGO_URL.length + ")" : "NO - Check .env location");
+console.log("MONGO_URL =", process.env.MONGO_URL);
 
 connectDB();
 
