@@ -25,6 +25,8 @@ app.use("/api/nep", require("./routes/nepRoutes"));
 app.use("/api/mcqs", require("./routes/mcqRoutes"));
 app.use("/api", require("./routes/topicRoutes"));
 app.use("/api/streak", require("./routes/streakRoutes"));
+app.use("/api/problems", require("./routes/problemRoutes"));
+app.use("/api/submissions", require("./routes/submissionRoutes"));
 
 
 const PORT = process.env.PORT || 5000;

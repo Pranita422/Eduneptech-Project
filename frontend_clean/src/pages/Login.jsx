@@ -1,5 +1,5 @@
 // src/pages/Login.jsx
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -14,9 +14,9 @@ const Login = () => {
 
   // 🔐 If already logged in → dashboard
   const handleLogout = () => {
-  localStorage.removeItem("token");
-  navigate("/login");
-};
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
 
   const handleSubmit = async (e) => {
@@ -48,6 +48,7 @@ const Login = () => {
 
       if (isLogin) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user)); // Store user details
         navigate("/dashboard");
       } else {
         setMessage("Registration successful. Please login.");
@@ -73,18 +74,16 @@ const Login = () => {
         <div className="flex justify-center gap-4 mb-4">
           <button
             onClick={() => setIsLogin(true)}
-            className={`px-4 py-2 rounded-md ${
-              isLogin ? "bg-violet-500 text-white" : "border text-violet-500"
-            }`}
+            className={`px-4 py-2 rounded-md ${isLogin ? "bg-violet-500 text-white" : "border text-violet-500"
+              }`}
           >
             Login
           </button>
 
           <button
             onClick={() => setIsLogin(false)}
-            className={`px-4 py-2 rounded-md ${
-              !isLogin ? "bg-violet-500 text-white" : "border text-violet-500"
-            }`}
+            className={`px-4 py-2 rounded-md ${!isLogin ? "bg-violet-500 text-white" : "border text-violet-500"
+              }`}
           >
             Register
           </button>
@@ -133,7 +132,7 @@ const Login = () => {
           </button>
         </form>
 
-        
+
 
         <div className="text-center text-sm text-gray-400 my-4">or</div>
 

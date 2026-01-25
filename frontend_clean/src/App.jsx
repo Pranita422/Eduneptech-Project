@@ -6,6 +6,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import ProgrammingLanguages from "./pages/ProgrammingLanguages";
+import ProblemWorkspace from "./pages/ProblemWorkspace";
 //import LanguagePage from "./pages/LanguagePage";
 
 function App() {
@@ -20,6 +21,10 @@ function App() {
           <Route
             path="/programming-languages"
             element={<ProgrammingLanguages />}
+          />
+          <Route
+            path="/problem/:id"
+            element={<ProblemWorkspace />}
           />
         </Routes>
       </StreakProvider>

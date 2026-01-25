@@ -1,5 +1,5 @@
-//ProgrammingLanguages.jsx
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./ProgrammingLanguages.module.css";
 import axios from "axios";
 import { API_BASE_URL } from "../data/dashboardData";
@@ -8,21 +8,18 @@ import TheoryContent from "../components/TheoryContent";
 
 const languages = ["HTML", "JavaScript", "C", "C++", "Java", "Python", "CSS"];
 
-const mockProblems = [
-  { title: "Basics", difficulty: "Easy", completed: true },
-  { title: "Syntax", difficulty: "Easy", completed: true },
-  { title: "First Program", difficulty: "Medium", completed: true },
-  { title: "Loops", difficulty: "Medium", completed: false },
-  { title: "Advanced Concepts", difficulty: "Hard", completed: false }
-];
+// No mock problems needed anymore as we fetch from database
 
 export default function ProgrammingLanguages() {
+  const navigate = useNavigate();
   const [selectedLang, setSelectedLang] = useState("HTML");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeTopic, setActiveTopic] = useState(null);
   const [topics, setTopics] = useState([]);
+  const [problems, setProblems] = useState([]); // Real problem data
   const [loading, setLoading] = useState(false);
+  const [loadingProblems, setLoadingProblems] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
   const [bookmarks, setBookmarks] = useState(new Set());
 
@@ -30,6 +27,10 @@ export default function ProgrammingLanguages() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
+      // Reset active topic when search changes to show the first search result automatically
+      if (search) {
+        setActiveTopic(null);
+      }
     }, 300); // 300ms debounce delay
 
     return () => {
@@ -42,12 +43,12 @@ export default function ProgrammingLanguages() {
     const fetchTopics = async () => {
       setLoading(true);
       try {
+        // Fetch ALL topics for the language to allow uninterrupted navigation
         const response = await axios.get(
-          `http://localhost:5000/api/topics?language=${encodeURIComponent(selectedLang)}&search=${encodeURIComponent(debouncedSearch)}`
+          `${API_BASE_URL}/topics?language=${encodeURIComponent(selectedLang)}`
         );
         setTopics(response.data);
-        // If we are searching, we might want to reset the active topic if it's no longer in the list
-        // but for now let's just keep the logic simple
+        // Reset active topic only when language changes
         setActiveTopic(null);
       } catch (error) {
         console.error("Error fetching topics:", error);
@@ -58,15 +59,46 @@ export default function ProgrammingLanguages() {
     };
 
     fetchTopics();
-  }, [selectedLang, debouncedSearch]);
+  }, [selectedLang]); // Only refetch when language changes
 
-  const filteredTopics = topics; // Now topics ARE filtered from backend
+  // Fetch problems for the selected language
+  useEffect(() => {
+    const fetchProblems = async () => {
+      setLoadingProblems(true);
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/problems?language=${encodeURIComponent(selectedLang)}`
+        );
+        setProblems(response.data);
+      } catch (error) {
+        console.error("Error fetching problems:", error);
+        setProblems([]);
+      } finally {
+        setLoadingProblems(false);
+      }
+    };
 
-  // Determine current active topic (default to first if null)
-  const currentTopic = activeTopic || (filteredTopics.length > 0 ? filteredTopics[0] : null);
+    fetchProblems();
+  }, [selectedLang]);
 
-  // Find index of current topic in filtered list
-  const currentIndex = currentTopic ? filteredTopics.findIndex(t => t._id === currentTopic._id) : -1;
+  // Frontend filter for the sidebar display
+  const sidebarTopics = topics.filter(t =>
+    !debouncedSearch || t.topic.toLowerCase().includes(debouncedSearch.toLowerCase())
+  );
+
+  // Filtered languages for the top tabs
+  const filteredLanguages = languages.filter(lang =>
+    lang === selectedLang || !search || lang.toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Determine current active topic
+  // 1. Manually selected topic (activeTopic)
+  // 2. First search result (if searching and results exist)
+  // 3. First overall topic (if not searching or no search results)
+  const currentTopic = activeTopic || (debouncedSearch && sidebarTopics.length > 0 ? sidebarTopics[0] : (topics.length > 0 ? topics[0] : null));
+
+  // Use the FULL topics list for navigation logic so Prev/Next always work
+  const currentIndex = currentTopic ? topics.findIndex(t => t._id === currentTopic._id) : -1;
   // Streak update function
   const { updateStreakActivity, streak, fetchStreak } = useStreak();
   useEffect(() => {
@@ -85,17 +117,17 @@ export default function ProgrammingLanguages() {
 
 
   const hasPrev = currentIndex > 0;
-  const hasNext = currentIndex < filteredTopics.length - 1;
+  const hasNext = currentIndex < topics.length - 1;
 
   const handleNext = () => {
     if (hasNext) {
-      setActiveTopic(filteredTopics[currentIndex + 1]);
+      setActiveTopic(topics[currentIndex + 1]);
       updateStreak();
     }
   };
 
   const handlePrev = () => {
-    if (hasPrev) setActiveTopic(filteredTopics[currentIndex - 1]);
+    if (hasPrev) setActiveTopic(topics[currentIndex - 1]);
   };
 
   const toggleBookmark = (id) => {
@@ -113,27 +145,27 @@ export default function ProgrammingLanguages() {
   const totalTopics = topics.length;
   const languageProgress = totalTopics > 0 ? Math.round((completedCount / totalTopics) * 100) : 0;
 
-  const completedProblems = mockProblems.filter(p => p.completed).length;
-  const totalProblems = mockProblems.length;
-  const progressPercentage = Math.round((completedProblems / totalProblems) * 100);
+  // Real problem progress (mocked for now as we don't have user-problem completion logic yet)
+  const completedProblems = problems.filter(p => p.completed).length;
+  const totalProblems = problems.length;
+  const progressPercentage = totalProblems > 0 ? Math.round((completedProblems / totalProblems) * 100) : 0;
 
   return (
     <div className={styles.container}>
       {/* HEADER */}
       <div className={styles.header}>
         <h2 className={styles.pageTitle}>Programming Languages</h2>
-
         <hr className={styles.divider} />
 
         {/* LANGUAGE TABS */}
         <div className={styles.languageTabs}>
-          {languages.map((lang) => (
+          {filteredLanguages.map((lang) => (
             <button
               key={lang}
               onClick={() => {
                 setSelectedLang(lang);
                 setActiveTopic(null);
-                setSearch(""); // Reset search on language switch for better UX
+                setSearch(""); // Clear search to show topics of the selected language
               }}
               className={`${styles.languageTab} ${selectedLang === lang ? styles.active : ""
                 }`}
@@ -143,6 +175,9 @@ export default function ProgrammingLanguages() {
               <span>{lang}</span>
             </button>
           ))}
+          {filteredLanguages.length === 0 && sidebarTopics.length === 0 && search && (
+            <p className={styles.noLanguageMatch}>No matching results found</p>
+          )}
         </div>
 
         {/* SEARCH */}
@@ -173,11 +208,11 @@ export default function ProgrammingLanguages() {
           </h3>
           {loading ? (
             <p className={styles.loadingTopics}>Loading topics...</p>
-          ) : filteredTopics.length === 0 ? (
+          ) : sidebarTopics.length === 0 ? (
             <p className={styles.emptyTopics}>No topics found</p>
           ) : (
             <ul className={styles.topicsList}>
-              {filteredTopics.map((topic) => (
+              {sidebarTopics.map((topic) => (
                 <li
                   key={topic._id}
                   onClick={() => setActiveTopic(topic)}
@@ -249,7 +284,7 @@ export default function ProgrammingLanguages() {
                   </div>
                 ) : (
                   <TheoryContent
-                    content={currentTopic.theory}
+                    content={currentTopic.content}
                     key={currentTopic._id}
                   />
                 )}
@@ -322,25 +357,37 @@ export default function ProgrammingLanguages() {
           {/* PROBLEMS CARD */}
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>
-              <span>📝</span> Problems
+              <span>📝</span> Coding Problems
             </h3>
-            <ul className={styles.problemsList}>
-              {mockProblems.map((problem, idx) => (
-                <li key={idx} className={styles.problemItem}>
-                  <div className={styles.problemLeft}>
-                    <span className={styles.checkIcon}>
-                      {problem.completed ? "✓" : "○"}
+            {loadingProblems ? (
+              <p className={styles.loadingTopics}>Loading problems...</p>
+            ) : problems.length === 0 ? (
+              <p className={styles.emptyTopics}>No problems available yet</p>
+            ) : (
+              <ul className={styles.problemsList}>
+                {problems.map((problem) => (
+                  <li
+                    key={problem._id}
+                    className={styles.problemItem}
+                    title={problem.description}
+                    onClick={() => navigate(`/problem/${problem._id}`)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className={styles.problemLeft}>
+                      <span className={styles.checkIcon}>
+                        {problem.completed ? "✓" : "○"}
+                      </span>
+                      {problem.title}
+                    </div>
+                    <span className={`${styles.difficultyBadge} ${styles[`difficulty${problem.difficulty}`]}`}>
+                      {problem.difficulty}
                     </span>
-                    {problem.title}
-                  </div>
-                  <span className={styles.difficultyBadge}>
-                    {problem.difficulty}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className={styles.progressSummary}>
-              <h4 className={styles.progressTitle}></h4>
+              <h4 className={styles.progressTitle}>Language Mastery</h4>
               <div className={styles.progressTrack}>
                 <div
                   className={styles.progressFill}
@@ -355,6 +402,6 @@ export default function ProgrammingLanguages() {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
