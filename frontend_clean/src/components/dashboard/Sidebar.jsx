@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 function Sidebar({ activeSection, setActiveSection, openSems, setOpenSems }) {
-const navigate = useNavigate();
+    const navigate = useNavigate();
 
     const toggleMenu = (menu) => {
         setOpenSems((prev) => ({ ...prev, [menu]: !prev[menu] }));
@@ -44,11 +44,11 @@ const navigate = useNavigate();
 
                 {/* Programming Languages */}
                 <button
-    onClick={() => navigate("/programming-languages")}
-    className="block hover:text-violet-900 cursor-pointer w-full text-left"
->
-    💻 Programming Languages
-</button>
+                    onClick={() => navigate("/programming-languages")}
+                    className="block hover:text-violet-900 cursor-pointer w-full text-left"
+                >
+                    💻 Programming Languages
+                </button>
 
                 {/* Roadmap / Career expandable menu */}
                 <div>
@@ -62,37 +62,49 @@ const navigate = useNavigate();
                     {openSems.roadmapMenu && (
                         <div className="ml-6 mt-2 space-y-2 text-gray-700">
                             <button
-                                onClick={() => setActiveSection("aptitude")}
-                                className={`block hover:text-violet-900 ${activeSection === "aptitude" ? "text-violet-900 font-bold" : ""
-                                    }`}
+                                onClick={() => navigate("/dashboard/aptitude")}
+                                className="block hover:text-violet-900 cursor-pointer w-full text-left"
                             >
-                                ↳ Aptitude
+                                ↳ Aptitude Practice
                             </button>
                             <button
-                                onClick={() => setActiveSection("interview")}
-                                className={`block hover:text-violet-900 ${activeSection === "interview" ? "text-violet-900 font-bold" : ""
-                                    }`}
+                                onClick={() => navigate("/dashboard/roadmaps")}
+                                className="block hover:text-violet-900 cursor-pointer w-full text-left"
                             >
-                                ↳ Interview Questions
+                                ↳ Learning Roadmaps
                             </button>
-                            <button
-                                onClick={() => setActiveSection("web-roadmap")}
-                                className={`block hover:text-violet-900 ${activeSection === "web-roadmap" ? "text-violet-900 font-bold" : ""
-                                    }`}
+                            {/* <button
+                                onClick={() => navigate("/roadmap-aptitude")}
+                                className="block hover:text-violet-900 cursor-pointer w-full text-left"
                             >
-                                ↳ Web Dev Roadmap
-                            </button>
+                                ↳ Module Landing
+                            </button> */}
                         </div>
                     )}
                 </div>
 
                 {/* Upload Notes */}
                 <button
-                    onClick={() => setActiveSection("notes")}
+                    onClick={() => {
+                        setActiveSection("notes");
+                        navigate("/dashboard");
+                    }}
                     className={`block hover:text-violet-900 w-full text-left ${activeSection === "notes" ? "text-violet-900 cursor-pointer font-bold" : ""
                         }`}
                 >
                     📝 Upload Notes
+                </button>
+
+                {/* Certificates */}
+                <button
+                    onClick={() => {
+                        setActiveSection("certificates");
+                        navigate("/dashboard");
+                    }}
+                    className={`block hover:text-violet-900 w-full text-left ${activeSection === "certificates" ? "text-violet-900 cursor-pointer font-bold" : ""
+                        }`}
+                >
+                    🏆 Certificates
                 </button>
 
                 {/* Upgrade Button */}

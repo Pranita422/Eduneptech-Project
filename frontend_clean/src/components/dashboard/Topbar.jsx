@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-function Topbar({ onChatToggle, onLogout }) {
+function Topbar({ onChatToggle, onLogout, onCertificateClick }) {
     const [streak, setStreak] = useState(0);
 
     useEffect(() => {
@@ -60,7 +60,7 @@ function Topbar({ onChatToggle, onLogout }) {
                 <div className="flex items-center gap-1 text-orange-400 font-bold bg-white/10 px-3 py-1 rounded-full text-base" title={`Current Streak: ${streak} days`}>
                     <span>🔥</span> {streak}
                 </div>
-                <button title="Certificates">🏅</button>
+                <button title="Certificates" onClick={onCertificateClick}>🏅</button>
                 <button title="Settings">⚙️</button>
                 <button title="Chatbot" onClick={onChatToggle}>
                     🤖

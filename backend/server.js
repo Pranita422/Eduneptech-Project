@@ -26,7 +26,13 @@ app.use("/api/mcqs", require("./routes/mcqRoutes"));
 app.use("/api", require("./routes/topicRoutes"));
 app.use("/api/streak", require("./routes/streakRoutes"));
 app.use("/api/problems", require("./routes/problemRoutes"));
-app.use("/api/submissions", require("./routes/submissionRoutes"));
+app.use("/api/aptitude", require("./routes/aptitudeRoutes"));
+app.use("/api/roadmaps", require("./routes/roadmapRoutes"));
+app.use("/api/notes", require("./routes/noteRoutes"));
+app.use("/api/certificates", require("./routes/certificateRoutes"));
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 const PORT = process.env.PORT || 5000;

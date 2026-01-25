@@ -1,6 +1,6 @@
 // Dashboard.jsx
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Outlet, useLocation } from "react-router-dom";
 
 // Modular Components
 import Topbar from "../components/dashboard/Topbar";
@@ -14,6 +14,7 @@ import GenericSection from "../components/dashboard/GenericSection";
 import ProgrammingLanguagesSection from "../components/dashboard/ProgrammingLanguagesSection";
 import NotesUploadSection from "../components/dashboard/NotesUploadSection";
 import StreakCard from "../components/dashboard/StreakCard";
+import CertificateSection from "../components/dashboard/CertificateSection";
 import { useStreak } from "../context/StreakContext";
 
 // Data & Constants
@@ -21,6 +22,7 @@ import { API_BASE_URL } from "../data/dashboardData";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // --- STATE ---
   const [activeSection, setActiveSection] = useState("welcome");
@@ -51,6 +53,18 @@ function Dashboard() {
     updateStreakActivity("Daily Login");
   }, []);
 
+  // --- SYNC SIDEBAR STATE WITH URL ---
+  useEffect(() => {
+    if (location.pathname.includes("/dashboard/aptitude")) {
+      setActiveSection("aptitude");
+      setOpenSems(prev => ({ ...prev, roadmapMenu: true }));
+    }
+    if (location.pathname.includes("/dashboard/roadmap")) {
+      setActiveSection("roadmaps");
+      setOpenSems(prev => ({ ...prev, roadmapMenu: true }));
+    }
+  }, [location.pathname]);
+
   // --- CHAT LOGIC ---
   const handleSendMessage = () => {
     if (!input.trim()) return;
@@ -69,6 +83,12 @@ function Dashboard() {
 
   // --- RENDER HELPERS ---
   const renderMainContent = () => {
+    // If we are on a nested route (e.g., /dashboard/aptitude), show the Outlet
+    // Check if path is NOT exactly /dashboard (ignoring trailing slash)
+    if (location.pathname.replace(/\/$/, "") !== "/dashboard") {
+      return <Outlet />;
+    }
+
     switch (activeSection) {
       case "welcome":
         return (
@@ -88,14 +108,23 @@ function Dashboard() {
       case "lang":
         return <ProgrammingLanguagesSection />;
       case "aptitude":
-        return <RoadmapSection title="Aptitude" />;
+        // This case serves as a fallback or if user clicks sidebar button but URL is root dashboard? 
+        // No, clicking sidebar will change URL now. 
+        // But if state is set manually without URL change, we might want to redirect?
+        // Actually, sidebar will now use navigate().
+        return null;
       case "interview":
         return <RoadmapSection title="Interview Questions" />;
       case "web-roadmap":
         return <RoadmapSection title="Web Dev Roadmap" />;
       case "notes":
         return <NotesUploadSection />;
+      case "certificates":
+        return <CertificateSection />;
       default:
+        // Even if activeSection is 'aptitude', if we are at root /dashboard, we might want to show something?
+        // But the useEffect above sets activeSection based on URL.
+        // If we are at root /dashboard, activeSection likely 'welcome'.
         return (
           <GenericSection title="Dashboard Section">
             <p className="text-gray-700">Content for {activeSection} is under maintenance.</p>
@@ -108,6 +137,10 @@ function Dashboard() {
     <div className="bg-gray-50 font-sans min-h-screen">
       <Topbar
         onChatToggle={() => setChatOpen(!chatOpen)}
+        onCertificateClick={() => {
+          setActiveSection("certificates");
+          navigate("/dashboard");
+        }}
         onLogout={handleLogout}
       />
 
