@@ -22,6 +22,26 @@ export default function ProgrammingLanguages() {
   const [loadingProblems, setLoadingProblems] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
   const [bookmarks, setBookmarks] = useState(new Set());
+  const [userProgress, setUserProgress] = useState({ html: 0, css: 0, javascript: 0 });
+
+  // Fetch user progress
+  useEffect(() => {
+    const fetchUserProgress = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await axios.get(`${API_BASE_URL}/progress/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.data && res.data.user) {
+          setUserProgress(res.data.user.progress);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user progress", err);
+      }
+    };
+    fetchUserProgress();
+  }, [selectedLang]); // Refresh when language changes or on mount
 
   // Debounce search input
   useEffect(() => {
@@ -145,10 +165,8 @@ export default function ProgrammingLanguages() {
   const totalTopics = topics.length;
   const languageProgress = totalTopics > 0 ? Math.round((completedCount / totalTopics) * 100) : 0;
 
-  // Real problem progress (mocked for now as we don't have user-problem completion logic yet)
-  const completedProblems = problems.filter(p => p.completed).length;
-  const totalProblems = problems.length;
-  const progressPercentage = totalProblems > 0 ? Math.round((completedProblems / totalProblems) * 100) : 0;
+  // Real problem progress
+  const progressPercentage = userProgress[selectedLang.toLowerCase()] || 0;
 
   return (
     <div className={styles.container}>
@@ -203,9 +221,25 @@ export default function ProgrammingLanguages() {
       <div className={styles.grid}>
         {/* LEFT TOPICS PANEL - Side Navigation */}
         <nav className={styles.topicsPanel} aria-label="Topics Sidebar">
-          <h3 className={styles.panelTitle}>
-            <span>📚</span> {selectedLang} Tutorial
-          </h3>
+          <div className={styles.sidebarProgress}>
+            <div className={styles.sidebarHeader}>
+              <div className={styles.sidebarTitleRow}>
+                <span className={styles.sidebarIcon}>📚</span>
+                <span className={styles.sidebarTitle}>{selectedLang} Tutorial</span>
+              </div>
+              <span className={styles.sidebarPercent}>{progressPercentage}%</span>
+            </div>
+            <div className={styles.sidebarProgressTrack}>
+              <div
+                className={styles.sidebarProgressFill}
+                style={{ width: `${progressPercentage}%` }}
+                role="progressbar"
+                aria-valuenow={progressPercentage}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              ></div>
+            </div>
+          </div>
           {loading ? (
             <p className={styles.loadingTopics}>Loading topics...</p>
           ) : sidebarTopics.length === 0 ? (
@@ -334,25 +368,6 @@ export default function ProgrammingLanguages() {
           </div>
 
 
-          {/* OVERALL PROGRESS CARD */}
-          <div className={`${styles.card} ${styles.progressCard}`}>
-            <div className={styles.progressOverview}>
-              <h4 className={styles.progressTitle}>{selectedLang} Learning Progress</h4>
-              <div className={styles.overallProgressTrack}>
-                <div
-                  className={styles.overallProgressFill}
-                  style={{ width: `${languageProgress}%` }}
-                  role="progressbar"
-                  aria-valuenow={languageProgress}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-label={`${selectedLang} learning progress`}
-                />
-              </div>
-
-
-            </div>
-          </div>
 
           {/* PROBLEMS CARD */}
           <div className={styles.card}>
@@ -386,19 +401,6 @@ export default function ProgrammingLanguages() {
                 ))}
               </ul>
             )}
-            <div className={styles.progressSummary}>
-              <h4 className={styles.progressTitle}>Language Mastery</h4>
-              <div className={styles.progressTrack}>
-                <div
-                  className={styles.progressFill}
-                  style={{ width: `${progressPercentage}%` }}
-                  role="progressbar"
-                  aria-valuenow={progressPercentage}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </div>
-            </div>
           </div>
         </div>
       </div>

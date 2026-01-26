@@ -189,7 +189,7 @@ const currentIndex = currentTopic
                     aria-label="Next Topic"
                   >
                     Next ❯
-                  </button>
+                  </button> 
                 </div>
 
                 <button

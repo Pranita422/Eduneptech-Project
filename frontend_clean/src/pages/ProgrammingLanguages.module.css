@@ -280,15 +280,56 @@
   background-color: var(--gray-400);
 }
 
-.panelTitle {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--violet-700);
-  margin-bottom: var(--spacing-md);
-  font-family: var(--font-heading);
+.sidebarProgress {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.sidebarTitleRow {
   display: flex;
   align-items: center;
   gap: var(--spacing-xs);
+}
+
+.sidebarIcon {
+  font-size: 1.125rem;
+}
+
+.sidebarTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2563eb;
+  font-family: var(--font-heading);
+}
+
+.sidebarProgressTrack {
+  width: 100%;
+  height: 0.4rem;
+  background-color: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: var(--spacing-xs) 0 0.25rem 0;
+}
+
+.sidebarProgressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+
+.sidebarPercent {
+  font-size: 0.8125rem;
+  color: #2563eb;
+  font-weight: 700;
 }
 
 .topicsList {
@@ -639,10 +680,10 @@
 
 .overallProgressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--violet-500), var(--violet-600));
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
   border-radius: var(--radius-full);
   transition: width var(--transition-slow);
-  box-shadow: 0 1px 3px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
 }
 
 
@@ -718,7 +759,22 @@
   border-top: 1px solid var(--gray-200);
 }
 
+.progressTrack {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--spacing-xs);
+}
 
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+}
 
 /* ============================================
    RESPONSIVE DESIGN

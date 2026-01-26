@@ -13,48 +13,64 @@ const getDayDifference = (date1, date2) => {
     return diffDays;
 };
 
-// Check and Update Streak Logic
+// Helper to check and update streak
+exports.checkAndUpdateStreak = async (userId, activity = "General Activity") => {
+    const user = await User.findById(userId);
+    if (!user) return null;
+
+    const today = new Date();
+    const lastActive = user.lastActiveDate ? new Date(user.lastActiveDate) : null;
+    let message = "Streak updated";
+    let streakIncremented = false;
+    let diff = 0;
+
+    if (!lastActive) {
+        // First time activity
+        user.streak = 1;
+        user.lastActiveDate = today;
+        streakIncremented = true;
+    } else {
+        diff = getDayDifference(lastActive, today);
+
+        if (diff === 0) {
+            // Same day, do nothing (or just update timestamp)
+            message = "Already active today";
+        } else if (diff === 1) {
+            // Consecutive day, increment
+            user.streak += 1;
+            user.lastActiveDate = today;
+            message = "Streak incremented! Keep it up!";
+            streakIncremented = true;
+        } else {
+            // Missed a day or more, reset
+            user.streak = 1;
+            user.lastActiveDate = today;
+            message = "Streak reset. Start fresh!";
+            streakIncremented = true; // Technically a new streak
+        }
+    }
+
+    // Add history if streak changed or for activity log
+    if (streakIncremented || diff > 0) {
+        user.streakHistory.push({ date: today, activity });
+    }
+
+    await user.save();
+    return { streak: user.streak, message, user };
+};
+
+// Check and Update Streak Logic (Endpoint)
 exports.updateStreak = async (req, res) => {
     try {
         const userId = req.user?.id || req.body.userId; // Handle both auth middleware and direct calls if needed
         if (!userId) return res.status(400).json({ message: "User ID required" });
 
-        const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ message: "User not found" });
-
-        const today = new Date();
-        const lastActive = user.lastActiveDate ? new Date(user.lastActiveDate) : null;
-        let message = "Streak updated";
-
-        if (!lastActive) {
-            // First time activity
-            user.streak = 1;
-            user.lastActiveDate = today;
-        } else {
-            const diff = getDayDifference(lastActive, today);
-
-            if (diff === 0) {
-                // Same day, do nothing (or just update timestamp)
-                message = "Already active today";
-            } else if (diff === 1) {
-                // Consecutive day, increment
-                user.streak += 1;
-                user.lastActiveDate = today;
-                message = "Streak incremented! Keep it up!";
-            } else {
-                // Missed a day or more, reset
-                user.streak = 1;
-                user.lastActiveDate = today;
-                message = "Streak reset. Start fresh!";
-            }
-        }
-
-        // Optional: Add history
         const activity = req.body?.activity || "General Activity";
-        user.streakHistory.push({ date: today, activity });
+        const result = await exports.checkAndUpdateStreak(userId, activity);
 
-        await user.save();
-        return res.json({ streak: user.streak, message });
+        if (!result) return res.status(404).json({ message: "User not found" });
+
+        return res.json({ streak: result.streak, message: result.message });
 
     } catch (error) {
         console.error("Streak Error:", error);

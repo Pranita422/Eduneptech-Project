@@ -1,5 +1,7 @@
 const Submission = require("../models/Submission");
 const Problem = require("../models/Problem");
+const User = require("../models/User"); // Ensure User model is available
+const streakController = require("./streakController");
 const vm = require("vm");
 
 // Evaluate solution code against test cases
@@ -62,6 +64,48 @@ exports.submitCode = async (req, res) => {
         });
 
         await submission.save();
+
+        // Update Streak and Progress if Accepted
+        if (result === "Accepted") {
+            // Check if this is the first time solving this problem
+            const existingAccepted = await Submission.findOne({
+                userId,
+                problemId,
+                result: "Accepted",
+                _id: { $ne: submission._id } // Exclude current one
+            });
+
+            const { user } = await streakController.checkAndUpdateStreak(userId, `Solved problem: ${problem.title}`);
+
+            if (user && !existingAccepted) {
+                const lang = language.toLowerCase();
+                // Initialize if not present (though Schema default should handle it)
+                if (!user.progress) user.progress = { html: 0, css: 0, javascript: 0, totalSolved: 0 };
+
+                // Increment specific language progress
+                if (user.progress[lang] !== undefined) {
+                    user.progress[lang] += 1;
+                }
+                user.progress.totalSolved += 1;
+
+                // Simple Achievements Check (Example)
+                if (user.progress.totalSolved === 1) {
+                    user.achievements.push({
+                        title: "First Step",
+                        description: "Solved your first problem!",
+                        icon: "🎯"
+                    });
+                } else if (user.progress.totalSolved === 10) {
+                    user.achievements.push({
+                        title: "Dedication",
+                        description: "Solved 10 problems!",
+                        icon: "🚀"
+                    });
+                }
+
+                await user.save();
+            }
+        }
 
         res.status(200).json({
             submissionId: submission._id,

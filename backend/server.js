@@ -30,6 +30,7 @@ app.use("/api/aptitude", require("./routes/aptitudeRoutes"));
 app.use("/api/roadmaps", require("./routes/roadmapRoutes"));
 app.use("/api/notes", require("./routes/noteRoutes"));
 app.use("/api/certificates", require("./routes/certificateRoutes"));
+app.use("/api/progress", require("./routes/progressRoutes"));
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
