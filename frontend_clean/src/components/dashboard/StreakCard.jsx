@@ -60,35 +60,47 @@ const StreakCard = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-white border border-purple-200 rounded-2xl shadow-md p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
+      <div className="p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Daily Momentum</h3>
+          <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
+            <span className="text-lg animate-pulse">🔥</span>
+          </div>
+        </div>
 
-      {/* Header */}
-      <h3 className="text-lg font-bold text-purple-700 mb-3 flex items-center gap-2">
-        <span className="text-2xl animate-pulse">🔥</span>
-        Daily Streak
-      </h3>
+        {/* Streak Count */}
+        <div className="flex items-baseline gap-2 mb-1">
+          <div className="text-5xl font-black text-slate-900 group-hover:scale-105 transition-transform origin-left">
+            {streak}
+          </div>
+          <span className="text-slate-400 font-bold">days</span>
+        </div>
 
-      {/* Streak Count */}
-      <div className="text-6xl font-extrabold text-purple-600 leading-none">
-        {streak}
+        {/* Message */}
+        <p className="text-sm text-slate-500 font-medium mb-6">
+          {getMessage()}
+        </p>
+
+        {/* Progress Bar Container */}
+        <div className="space-y-2">
+          <div className="flex justify-between items-end">
+            <span className="text-[10px] font-bold text-slate-400 uppercase">Weekly Goal</span>
+            <span className="text-xs font-bold text-indigo-600">{streak}/{goal}</span>
+          </div>
+          <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-50">
+            <div
+              className="bg-indigo-600 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(79,70,229,0.4)]"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Message */}
-      <p className="text-sm text-gray-600 mt-2 font-medium">
-        {getMessage()}
-      </p>
-
-      {/* Progress Bar */}
-      <div className="mt-4">
-        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-          <div
-            className="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <p className="text-xs text-gray-500 mt-1">
-          {streak}/{goal} days goal
-        </p>
+      {/* Footer Decoration */}
+      <div className="bg-slate-50 px-6 py-3 border-t border-slate-100">
+        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Next milestone: 7 Day Master</div>
       </div>
     </div>
   );

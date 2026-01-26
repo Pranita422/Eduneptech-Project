@@ -6,36 +6,55 @@ const vm = require("vm");
 
 // Evaluate solution code against test cases
 exports.submitCode = async (req, res) => {
+    console.log("[Backend] Received submission request:", {
+        userId: req.body.userId,
+        problemId: req.body.problemId,
+        language: req.body.language,
+        codeLength: req.body.code ? req.body.code.length : 0
+    });
+
     try {
         const { userId, problemId, language, code } = req.body;
 
         if (!userId || !problemId || !language || !code) {
+            console.warn("[Backend] Missing required fields in submission");
             return res.status(400).json({ message: "Missing required fields" });
         }
 
         const problem = await Problem.findById(problemId);
         if (!problem) {
+            console.warn("[Backend] Problem not found:", problemId);
             return res.status(404).json({ message: "Problem not found" });
         }
 
         const testCases = problem.testCases || [];
         if (testCases.length === 0) {
+            console.warn("[Backend] No test cases for problem:", problemId);
             return res.status(400).json({ message: "No test cases defined for this problem" });
         }
 
         let testCasesPassed = 0;
         let result = "Accepted";
+        let message = "";
 
         // Evaluation logic (Supported: JavaScript)
         if (language.toLowerCase() === "javascript") {
             try {
                 for (const testCase of testCases) {
-                    const sandbox = { input: JSON.parse(testCase.input), result: null };
-                    // We assume the user's code is a function or logic that sets a variable 'output'
-                    // For example: "const solution = (n) => n * 2; output = solution(input);"
+                    const sandbox = {
+                        input: JSON.parse(testCase.input),
+                        output: null,
+                        console: {
+                            log: (...args) => console.log("User Log:", ...args),
+                            error: (...args) => console.error("User Error:", ...args),
+                            warn: (...args) => console.warn("User Warn:", ...args),
+                            debug: (...args) => console.debug("User Debug:", ...args),
+                        }
+                    };
+
                     const script = new vm.Script(code + `\noutput = solution(input);`);
                     const context = vm.createContext(sandbox);
-                    script.runInContext(context, { timeout: 1000 }); // 1s timeout
+                    script.runInContext(context, { timeout: 1000 });
 
                     if (String(sandbox.output) === String(testCase.expectedOutput)) {
                         testCasesPassed++;
@@ -44,14 +63,18 @@ exports.submitCode = async (req, res) => {
                     }
                 }
             } catch (err) {
+                console.error("[Backend] VM Execution Error:", err.message);
                 result = "Runtime Error";
+                message = err.message;
+                testCasesPassed = 0;
             }
         } else {
-            // For other languages, we simulate for now
-            // In a real app, this would call a remote execution API or a docker sandbox
+            // Simulated for other languages
             testCasesPassed = testCases.length;
             result = "Accepted";
         }
+
+        console.log("[Backend] Submission evaluation complete:", { result, testCasesPassed, total: testCases.length });
 
         const submission = new Submission({
             userId,
@@ -64,57 +87,22 @@ exports.submitCode = async (req, res) => {
         });
 
         await submission.save();
-
-        // Update Streak and Progress if Accepted
-        if (result === "Accepted") {
-            // Check if this is the first time solving this problem
-            const existingAccepted = await Submission.findOne({
-                userId,
-                problemId,
-                result: "Accepted",
-                _id: { $ne: submission._id } // Exclude current one
-            });
-
-            const { user } = await streakController.checkAndUpdateStreak(userId, `Solved problem: ${problem.title}`);
-
-            if (user && !existingAccepted) {
-                const lang = language.toLowerCase();
-                // Initialize if not present (though Schema default should handle it)
-                if (!user.progress) user.progress = { html: 0, css: 0, javascript: 0, totalSolved: 0 };
-
-                // Increment specific language progress
-                if (user.progress[lang] !== undefined) {
-                    user.progress[lang] += 1;
-                }
-                user.progress.totalSolved += 1;
-
-                // Simple Achievements Check (Example)
-                if (user.progress.totalSolved === 1) {
-                    user.achievements.push({
-                        title: "First Step",
-                        description: "Solved your first problem!",
-                        icon: "🎯"
-                    });
-                } else if (user.progress.totalSolved === 10) {
-                    user.achievements.push({
-                        title: "Dedication",
-                        description: "Solved 10 problems!",
-                        icon: "🚀"
-                    });
-                }
-
-                await user.save();
-            }
-        }
+        console.log("[Backend] Submission saved successfully ID:", submission._id);
 
         res.status(200).json({
             submissionId: submission._id,
             result,
+            message,
             testCasesPassed,
             totalTestCases: testCases.length
         });
     } catch (err) {
-        res.status(500).json({ message: "Error processing submission", error: err.message });
+        console.error("[Backend] Global Submission Error:", err);
+        res.status(500).json({
+            result: "Submission Error",
+            message: "Fatal system error while processing submission.",
+            error: err.message
+        });
     }
 };
 

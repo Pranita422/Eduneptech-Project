@@ -65,75 +65,89 @@ function CertificateSection() {
     };
 
     return (
-        <section className="animate-in zoom-in duration-500 max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-8 text-violet-800 border-b-2 border-violet-100 pb-2">
-                🏆 Achievements & Certificates
-            </h2>
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-1000 max-w-7xl mx-auto px-4">
+            <div className="mb-12">
+                <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
+                    Official Certifications
+                </h2>
+                <p className="text-slate-500 font-medium italic">Validate your expertise and build your professional portfolio</p>
+            </div>
 
             {loading ? (
-                <div className="text-center py-20 text-gray-400">Loading achievements...</div>
+                <div className="py-24 text-center">
+                    <div className="w-16 h-16 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin mx-auto mb-6"></div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Compiling Records...</p>
+                </div>
             ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                     {certificates.map((cert) => (
                         <div
                             key={cert.type}
-                            className={`relative rounded-3xl p-8 border-2 transition-all duration-300 ${cert.status === "LOCKED"
-                                    ? "bg-gray-50 border-gray-200 opacity-80 grayscale"
-                                    : "bg-white border-violet-100 shadow-lg hover:shadow-xl hover:-translate-y-1"
+                            className={`group relative rounded-[2.5rem] p-10 border transition-all duration-500 flex flex-col overflow-hidden ${cert.status === "LOCKED"
+                                ? "bg-slate-50 border-slate-100 opacity-60"
+                                : "bg-white border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-indigo-100 hover:-translate-y-2"
                                 }`}
                         >
-                            {/* Status Badge */}
-                            <div className="absolute top-6 right-6">
-                                {cert.status === "LOCKED" && <span className="text-2xl">🔒</span>}
-                                {cert.status === "UNLOCKED" && <span className="text-2xl animate-bounce">🔓</span>}
-                                {cert.status === "EARNED" && <span className="text-2xl">✅</span>}
+                            {/* Ornamental Backdrop */}
+                            <div className={`absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity duration-700 ${cert.status === 'LOCKED' ? 'bg-slate-200' : 'bg-indigo-400'}`}></div>
+
+                            {/* Status Indicator */}
+                            <div className="absolute top-10 right-10">
+                                {cert.status === "LOCKED" && <span className="text-slate-300 font-black text-[10px] uppercase tracking-widest bg-slate-100 px-3 py-1 rounded-full">Secure</span>}
+                                {cert.status === "UNLOCKED" && <span className="text-indigo-600 font-black text-[10px] uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full animate-pulse">Claim Ready</span>}
+                                {cert.status === "EARNED" && <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-200"><span className="text-white text-xs">✓</span></div>}
                             </div>
 
-                            <div className="mb-6">
-                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-4 ${cert.status === "LOCKED" ? "bg-gray-200" : "bg-violet-100"
+                            <div className="mb-10 relative z-10">
+                                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-4xl mb-6 shadow-sm border border-white transition-transform group-hover:scale-110 duration-500 ${cert.status === "LOCKED" ? "bg-slate-100 text-slate-400" : "bg-indigo-50 text-indigo-600"
                                     }`}>
-                                    📜
+                                    {cert.status === 'EARNED' ? '🎖️' : '📜'}
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-800 mb-2">{cert.title}</h3>
-                                <p className="text-sm text-gray-500">{cert.description}</p>
+                                <h3 className="text-xl font-black text-slate-900 mb-2 leading-tight">{cert.title}</h3>
+                                <p className="text-slate-500 text-sm font-medium leading-relaxed">{cert.description}</p>
                             </div>
 
-                            {/* Progress Bar */}
-                            {cert.status !== "EARNED" && (
-                                <div className="mb-6">
-                                    <div className="flex justify-between text-xs font-semibold text-gray-500 mb-1">
-                                        <span>Progress</span>
-                                        <span>{Math.min(cert.progress, cert.target)} / {cert.target}</span>
+                            {/* Progress or Status Label */}
+                            <div className="mt-auto relative z-10">
+                                {cert.status !== "EARNED" ? (
+                                    <div className="mb-8">
+                                        <div className="flex justify-between items-end mb-3">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Course Integrity</span>
+                                            <span className="text-sm font-black text-slate-900">{Math.min(cert.progress, cert.target)}<span className="text-slate-300 mx-1">/</span>{cert.target}</span>
+                                        </div>
+                                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-white">
+                                            <div
+                                                className={`h-full rounded-full transition-all duration-1000 ease-out ${cert.status === "LOCKED" ? "bg-slate-300" : "bg-indigo-600 shadow-[0_0_8px_rgba(79,70,229,0.3)]"}`}
+                                                style={{ width: `${Math.min((cert.progress / cert.target) * 100, 100)}%` }}
+                                            ></div>
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div
-                                            className={`h-2.5 rounded-full ${cert.status === "LOCKED" ? "bg-gray-400" : "bg-violet-600"}`}
-                                            style={{ width: `${Math.min((cert.progress / cert.target) * 100, 100)}%` }}
-                                        ></div>
+                                ) : (
+                                    <div className="mb-8 p-3 bg-emerald-50/50 rounded-2xl border border-emerald-100/50 flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                        <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Verify ID: #{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                            {/* Action Button */}
-                            <div className="mt-auto">
+                                {/* Actions */}
                                 {cert.status === "LOCKED" ? (
-                                    <button disabled className="w-full py-3 bg-gray-200 text-gray-400 rounded-xl font-bold text-sm cursor-not-allowed">
-                                        Locked
+                                    <button disabled className="w-full py-4 bg-slate-100 text-slate-400 rounded-2xl font-black text-xs uppercase tracking-[0.2em] cursor-not-allowed">
+                                        LOCKED NODE
                                     </button>
                                 ) : cert.status === "UNLOCKED" ? (
                                     <button
                                         onClick={() => handleClaim(cert.type)}
                                         disabled={claiming === cert.type}
-                                        className="w-full py-3 bg-violet-600 text-white rounded-xl font-bold text-sm hover:bg-violet-700 transition-colors shadow-lg hover:shadow-violet-200"
+                                        className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 hover:shadow-indigo-200 active:scale-[0.98]"
                                     >
-                                        {claiming === cert.type ? "Claiming..." : "Claim Certificate"}
+                                        {claiming === cert.type ? "VALIDATING..." : "REDEEM CREDENTIAL"}
                                     </button>
                                 ) : (
                                     <button
                                         onClick={() => handleDownload(cert.type)}
-                                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-sm hover:bg-green-700 transition-colors shadow-lg hover:shadow-green-200 flex items-center justify-center gap-2"
+                                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 hover:shadow-indigo-200 flex items-center justify-center gap-3 active:scale-[0.98]"
                                     >
-                                        <span>⬇️</span> Download PDF
+                                        <span className="text-base">📥</span> DOWNLOAD DATA
                                     </button>
                                 )}
                             </div>

@@ -134,7 +134,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="bg-gray-50 font-sans min-h-screen">
+    <div className="bg-[#fcfdfe] font-sans min-h-screen flex flex-col">
       <Topbar
         onChatToggle={() => setChatOpen(!chatOpen)}
         onCertificateClick={() => {
@@ -144,7 +144,7 @@ function Dashboard() {
         onLogout={handleLogout}
       />
 
-      <div className="flex">
+      <div className="flex flex-1 relative">
         <Sidebar
           activeSection={activeSection}
           setActiveSection={setActiveSection}
@@ -152,8 +152,23 @@ function Dashboard() {
           setOpenSems={setOpenSems}
         />
 
-        <main className="flex-1 p-8">
-          {renderMainContent()}
+        <main className="flex-1 p-6 md:p-10 lg:p-12 overflow-y-auto">
+          <div className="max-w-6xl mx-auto">
+            {/* Dynamic Breadcrumb/Context Header */}
+            <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
+              <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-2 block">
+                {activeSection === 'welcome' ? 'Overview' : activeSection.replace('-', ' ')}
+              </span>
+              <h1 className="text-4xl font-black text-slate-900 leading-tight">
+                {activeSection === 'welcome' ? 'Ready to code, User?' : activeSection.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+              </h1>
+              <div className="h-1.5 w-20 bg-indigo-600 rounded-full mt-4 shadow-lg shadow-indigo-100"></div>
+            </div>
+
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-100">
+              {renderMainContent()}
+            </div>
+          </div>
         </main>
       </div>
 

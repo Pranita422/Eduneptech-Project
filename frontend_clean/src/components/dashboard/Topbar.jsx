@@ -49,25 +49,59 @@ function Topbar({ onChatToggle, onLogout, onCertificateClick }) {
     }, []);
 
     return (
-        <header className="bg-violet-600 text-white flex justify-between items-center px-6 py-4 shadow-md">
-            <h1 className="text-xl font-bold flex items-center gap-2">
-                🎓{" "}
-                <span>
-                    Edu<span className="text-yellow-300">nep</span>tech
-                </span>
-            </h1>
-            <div className="flex gap-5 text-2xl">
-                <div className="flex items-center gap-1 text-orange-400 font-bold bg-white/10 px-3 py-1 rounded-full text-base" title={`Current Streak: ${streak} days`}>
-                    <span>🔥</span> {streak}
+        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-3 flex justify-between items-center shadow-sm">
+            <div className="flex items-center gap-2 group cursor-pointer">
+                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100 group-hover:scale-110 transition-transform">
+                    <span className="text-white text-xl font-bold">E</span>
                 </div>
-                <button title="Certificates" onClick={onCertificateClick}>🏅</button>
-                <button title="Settings">⚙️</button>
-                <button title="Chatbot" onClick={onChatToggle}>
-                    🤖
-                </button>
-                <button title="Logout" onClick={onLogout}>
-                    🚪
-                </button>
+                <h1 className="text-xl font-extrabold tracking-tight text-slate-900 hidden md:block">
+                    Eduneptech
+                </h1>
+            </div>
+
+            <div className="flex items-center gap-3 md:gap-6">
+                {/* Search Bar Placeholder */}
+                <div className="hidden lg:flex items-center bg-slate-100 px-4 py-2 rounded-xl text-slate-400 gap-3 border border-transparent focus-within:border-indigo-500 focus-within:bg-white focus-within:shadow-sm transition-all">
+                    <span>🔍</span>
+                    <input type="text" placeholder="Search resources..." className="bg-transparent border-none outline-none text-sm text-slate-600 placeholder:text-slate-400 w-48" />
+                </div>
+
+                <div className="flex items-center gap-1.5 md:gap-2.5">
+                    <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 px-3 py-1.5 rounded-xl shadow-sm cursor-help" title={`Current Streak: ${streak} days`}>
+                        <span className="text-lg animate-bounce">🔥</span>
+                        <span className="text-sm font-bold text-orange-600">{streak}</span>
+                    </div>
+
+                    <div className="h-6 w-px bg-slate-200 mx-1 hidden md:block"></div>
+
+                    <div className="flex gap-1 md:gap-2">
+                        <button onClick={onCertificateClick} className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors relative group" title="Certificates">
+                            <span className="text-xl">🏅</span>
+                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                        </button>
+
+                        <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-xl transition-colors" title="Settings">
+                            <span className="text-xl">⚙️</span>
+                        </button>
+
+                        <button onClick={onChatToggle} className="p-2 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-colors" title="AI Assistant">
+                            <span className="text-xl">🤖</span>
+                        </button>
+                    </div>
+
+                    <div className="h-6 w-px bg-slate-200 mx-1"></div>
+
+                    <button
+                        onClick={onLogout}
+                        className="flex items-center gap-2 pl-2 pr-1 py-1 hover:bg-red-50 rounded-xl transition-all group"
+                        title="Logout"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm group-hover:bg-red-100 group-hover:text-red-600 transition-colors">
+                            U
+                        </div>
+                        <span className="text-lg group-hover:translate-x-1 transition-transform">🚪</span>
+                    </button>
+                </div>
             </div>
         </header>
     );

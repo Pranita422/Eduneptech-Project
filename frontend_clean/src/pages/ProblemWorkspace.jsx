@@ -24,7 +24,9 @@ const ProblemWorkspace = () => {
                 setProblem(res.data);
                 // Default code template based on language
                 if (res.data.language.toLowerCase() === "javascript") {
-                    setCode(`/**\n * @param {any} input\n * @return {any}\n */\nconst solution = (input) => {\n    // Write your code here\n    \n};`);
+                    setCode(`function solution(input) {\n    // Write your code here\n    \n}`);
+                } else if (res.data.language.toLowerCase() === "html") {
+                    setCode(`<!-- Create your HTML solution here -->\n\n`);
                 } else {
                     setCode(`// Solve the ${res.data.language} challenge here...`);
                 }
@@ -65,21 +67,62 @@ const ProblemWorkspace = () => {
             const userStr = localStorage.getItem("user");
             if (!userStr) {
                 alert("Please login to submit code");
+                setSubmitting(false);
                 return;
             }
             const user = JSON.parse(userStr);
+            const userId = user.id || user._id;
+
+            if (!userId) {
+                setResult({
+                    result: "Submission Error",
+                    message: "User identity missing. Please logout and login again.",
+                    totalTestCases: 0,
+                    testCasesPassed: 0
+                });
+                setSubmitting(false);
+                return;
+            }
+
+            console.log("[Frontend] Submitting with payload:", {
+                userId,
+                problemId: id,
+                language: problem.language,
+                code: code.substring(0, 50) + "..."
+            });
 
             const res = await axios.post(`${API_BASE_URL}/submissions`, {
-                userId: user.id || user._id,
+                userId,
                 problemId: id,
                 language: problem.language,
                 code: code
             });
+
+            console.log("[Frontend] Submission Response:", res.data);
             setResult(res.data);
+
             if (activeTab === "submissions") fetchHistory();
         } catch (err) {
-            console.error("Submission failed", err);
-            setResult({ result: "Submission Error", message: err.message });
+            console.error("[Frontend] Submission Error Details:", err);
+            console.error("[Frontend] Error Response:", err.response?.data);
+
+            // If the error response has data, it might be our custom 500 error
+            if (err.response && err.response.data) {
+                setResult({
+                    result: err.response.data.result || "Submission Error",
+                    message: err.response.data.message || "An unexpected error occurred on the server.",
+                    totalTestCases: 0,
+                    testCasesPassed: 0
+                });
+            } else {
+                // Network or other client-side errors
+                setResult({
+                    result: "Network Error",
+                    message: "Could not reach the server. Please check your connection.",
+                    totalTestCases: 0,
+                    testCasesPassed: 0
+                });
+            }
         } finally {
             setSubmitting(false);
         }
@@ -92,8 +135,15 @@ const ProblemWorkspace = () => {
         <div className={styles.container}>
             <header className={styles.header}>
                 <Link to="/programming-languages" className={styles.backBtn}>
-                    <span>←</span> Back to Problems
+                    <span className="text-xl">←</span>
+                    <span>Back to Challenges</span>
                 </Link>
+                <div className="flex items-center gap-3">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Workspace v1.2</span>
+                    <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <span className="text-white text-xs font-bold">E</span>
+                    </div>
+                </div>
             </header>
 
             <main className={styles.main}>
@@ -104,13 +154,13 @@ const ProblemWorkspace = () => {
                             className={`${styles.tabBtn} ${activeTab === 'description' ? styles.activeTab : ''}`}
                             onClick={() => setActiveTab('description')}
                         >
-                            Description
+                            Challenge
                         </button>
                         <button
                             className={`${styles.tabBtn} ${activeTab === 'submissions' ? styles.activeTab : ''}`}
                             onClick={() => setActiveTab('submissions')}
                         >
-                            Submissions
+                            History
                         </button>
                     </div>
 
@@ -118,15 +168,15 @@ const ProblemWorkspace = () => {
                         {activeTab === 'description' ? (
                             <>
                                 <h1 className={styles.title}>{problem.title}</h1>
-                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
-                                    <span className={`${styles.difficulty} ${styles[problem.difficulty]}`} style={{ marginBottom: 0 }}>
+                                <div>
+                                    <span className={`${styles.difficulty} ${styles[problem.difficulty]}`}>
                                         {problem.difficulty}
                                     </span>
                                 </div>
 
                                 {problem.tags && (
                                     <div className={styles.tags}>
-                                        {problem.tags.map(t => <span key={t} className={styles.tag}>{t}</span>)}
+                                        {problem.tags.map(t => <span key={t} className={styles.tag}>#{t}</span>)}
                                     </div>
                                 )}
 
@@ -134,58 +184,70 @@ const ProblemWorkspace = () => {
                                     {problem.description}
                                 </div>
 
-                                <h3 className={styles.sectionTitle}>Examples</h3>
+                                <h3 className={styles.sectionTitle}>Input/Output Examples</h3>
                                 {problem.examples && problem.examples.map((ex, i) => (
                                     <div key={i} className={styles.example}>
-                                        <strong>Example {i + 1}:</strong>
-                                        <div style={{ marginTop: '0.5rem' }}>
-                                            <strong>Input:</strong> {ex.input}<br />
-                                            <strong>Output:</strong> {ex.output}
-                                            {ex.explanation && <div><strong>Explanation:</strong> {ex.explanation}</div>}
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <div className="w-5 h-5 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">{i + 1}</div>
+                                            <span className="text-xs font-black text-slate-900 uppercase">Case {i + 1}</span>
+                                        </div>
+                                        <div className="space-y-2 text-sm font-medium">
+                                            <div className="flex gap-2"><span className="text-slate-400 w-16 invisible lg:visible">Input</span> <code className="bg-slate-50 px-2 py-1 rounded text-indigo-600">{ex.input}</code></div>
+                                            <div className="flex gap-2"><span className="text-slate-400 w-16 invisible lg:visible">Output</span> <code className="bg-slate-50 px-2 py-1 rounded text-emerald-600">{ex.output}</code></div>
+                                            {ex.explanation && <div className="mt-3 pt-3 border-t border-slate-100 text-slate-400 italic text-xs">Note: {ex.explanation}</div>}
                                         </div>
                                     </div>
                                 ))}
 
                                 {problem.constraints && problem.constraints.length > 0 && (
-                                    <>
+                                    <div className="mt-8">
                                         <h3 className={styles.sectionTitle}>Constraints</h3>
-                                        <ul className={styles.constraints}>
-                                            {problem.constraints.map((c, i) => <li key={i}>{c}</li>)}
+                                        <ul className="space-y-2">
+                                            {problem.constraints.map((c, i) => (
+                                                <li key={i} className="flex gap-2 text-sm font-medium text-slate-500">
+                                                    <span className="text-indigo-400">•</span> {c}
+                                                </li>
+                                            ))}
                                         </ul>
-                                    </>
+                                    </div>
                                 )}
                             </>
                         ) : (
                             <div className={styles.submissionsTab}>
                                 <h2 className={styles.sectionTitle}>Recent Submissions</h2>
                                 {loadingHistory ? (
-                                    <p>Loading history...</p>
+                                    <div className="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-xs animate-pulse">Syncing...</div>
                                 ) : submissions.length === 0 ? (
-                                    <p>No submissions yet.</p>
+                                    <div className="py-10 text-center">
+                                        <p className="text-slate-300 font-black italic">NO RECORDS FOUND</p>
+                                    </div>
                                 ) : (
-                                    <ul className={styles.submissionsList}>
+                                    <div className="space-y-4">
                                         {submissions.map((sub) => (
-                                            <li key={sub._id} className={styles.submissionItem}>
+                                            <div key={sub._id} className={styles.submissionItem}>
                                                 <div>
-                                                    <span className={`${styles.subResult} ${styles[sub.result.replace(' ', '')]}`}>
+                                                    <span className={`${styles.subResult} ${sub.result === 'Accepted' ? 'text-emerald-500' : 'text-rose-500'}`}>
                                                         {sub.result}
                                                     </span>
                                                     <div className={styles.subDate}>
-                                                        {new Date(sub.timestamp).toLocaleString()}
+                                                        {new Date(sub.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                     </div>
                                                 </div>
-                                                <div className={styles.testsInfo}>
-                                                    {sub.testCasesPassed} / {sub.totalTestCases}
+                                                <div className="flex flex-col items-end gap-2">
+                                                    <div className="text-[10px] font-black text-slate-400 flex gap-2">
+                                                        <span>PASSED:</span>
+                                                        <span className="text-slate-900">{sub.testCasesPassed}/{sub.totalTestCases}</span>
+                                                    </div>
+                                                    <button
+                                                        className={styles.viewBtn}
+                                                        onClick={() => setViewCode(sub.code)}
+                                                    >
+                                                        REPLAY CODE
+                                                    </button>
                                                 </div>
-                                                <button
-                                                    className={styles.viewBtn}
-                                                    onClick={() => setViewCode(sub.code)}
-                                                >
-                                                    View Code
-                                                </button>
-                                            </li>
+                                            </div>
                                         ))}
-                                    </ul>
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -195,14 +257,17 @@ const ProblemWorkspace = () => {
                 {/* RIGHT PANE: Code Editor */}
                 <div className={`${styles.pane} ${styles.editorPane}`}>
                     <div className={styles.editorHeader}>
-                        <span>{problem.language}</span>
-                        <span>Editor</span>
+                        <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span>{problem.language} KERNEL</span>
+                        </div>
+                        <span className="opacity-40">READY</span>
                     </div>
                     <textarea
                         className={styles.codeArea}
                         value={code}
                         onChange={(e) => setCode(e.target.value)}
-                        placeholder="Write your code here..."
+                        placeholder="Assemble your logic here..."
                         spellCheck="false"
                     />
                     <footer className={styles.footer}>
@@ -211,7 +276,7 @@ const ProblemWorkspace = () => {
                             onClick={handleSubmit}
                             disabled={submitting}
                         >
-                            {submitting ? "Evaluating..." : "Submit Solution"}
+                            {submitting ? "VERIFYING..." : "DEPLOY SOLUTION"}
                         </button>
                     </footer>
                 </div>
@@ -221,15 +286,31 @@ const ProblemWorkspace = () => {
             <div className={`${styles.resultPanel} ${result ? styles.showResult : ""}`}>
                 <div className={styles.resultHeader}>
                     <h2 className={`${styles.resultTitle} ${result?.result === 'Accepted' ? styles.Accepted : styles.WrongAnswer}`}>
-                        {result?.result}
+                        {result?.result === 'Accepted' ? 'EXECUTION SUCCESS' : (result?.result || 'EXECUTION FAILED')}
                     </h2>
                     <span className={styles.closeBtn} onClick={() => setResult(null)}>×</span>
                 </div>
                 {result && (
                     <div className={styles.resultBody}>
-                        <p className={styles.testsInfo}>
-                            Test Cases Passed: <strong>{result.testCasesPassed} / {result.totalTestCases}</strong>
-                        </p>
+                        {result.result === 'Accepted' ? (
+                            <div className="space-y-2">
+                                <p className={styles.testsInfo}>
+                                    INTEGRITY CHECK: <strong>{result.testCasesPassed} / {result.totalTestCases} PASSED</strong>
+                                </p>
+                                <p className="text-[10px] text-emerald-600 font-bold uppercase">Solution saved to repository</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                {result.message && (
+                                    <p className="text-rose-400 text-xs font-mono bg-slate-50 p-2 rounded border border-rose-100">
+                                        DEBUG: {result.message}
+                                    </p>
+                                )}
+                                <p className={styles.testsInfo}>
+                                    Test Cases Passed: <strong>{(result.testCasesPassed ?? 0)} / {(result.totalTestCases ?? 0)}</strong>
+                                </p>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -239,11 +320,11 @@ const ProblemWorkspace = () => {
                 <div className={styles.modalOverlay} onClick={() => setViewCode(null)}>
                     <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
                         <div className={styles.modalHeader}>
-                            <h3>Submission Code</h3>
-                            <button className={styles.closeBtn} onClick={() => setViewCode(null)}>×</button>
+                            <h3 className="text-sm font-black text-white tracking-widest uppercase">Archive Node</h3>
+                            <button className="text-white opacity-40 hover:opacity-100 text-2xl" onClick={() => setViewCode(null)}>×</button>
                         </div>
                         <div className={styles.modalBody}>
-                            <pre><code>{viewCode}</code></pre>
+                            <pre className="text-emerald-400 font-mono text-sm leading-relaxed"><code>{viewCode}</code></pre>
                         </div>
                     </div>
                 </div>

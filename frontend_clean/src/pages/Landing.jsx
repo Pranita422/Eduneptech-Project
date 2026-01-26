@@ -214,7 +214,7 @@ const LandingPage = () => {
       >
         <h2 style={{ color: "#6C63FF", fontSize: "28px", marginBottom: "20px" }}>About Eduneptech</h2>
         <p style={{ color: "#333", fontSize: "18px", maxWidth: "800px", margin: "0 auto" }}>
-          Eduneptech is an innovative platform designed to help students follow the NEP 2020 syllabus. 
+          Eduneptech is an innovative platform designed to help students follow the NEP 2020 syllabus.
           You can track your progress, take assessments, get AI-based recommendations, and unlock premium features for an enhanced learning experience.
         </p>
       </section>

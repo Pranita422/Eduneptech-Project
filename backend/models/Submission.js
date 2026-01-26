@@ -23,7 +23,7 @@ const submissionSchema = new mongoose.Schema({
     },
     result: {
         type: String,
-        enum: ["Accepted", "Wrong Answer", "Runtime Error", "Compilation Error", "Time Limit Exceeded"],
+        enum: ["Accepted", "Wrong Answer", "Runtime Error", "Compilation Error", "Time Limit Exceeded", "Submission Error", "Network Error"],
         required: true
     },
     testCasesPassed: {

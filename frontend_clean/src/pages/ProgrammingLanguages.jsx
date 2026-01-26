@@ -5,6 +5,7 @@ import axios from "axios";
 import { API_BASE_URL } from "../data/dashboardData";
 import { useStreak } from "../context/StreakContext";
 import TheoryContent from "../components/TheoryContent";
+import { BookOpen, Code2, CheckCircle2 } from "lucide-react";
 
 const languages = ["HTML", "JavaScript", "C", "C++", "Java", "Python", "CSS"];
 
@@ -170,102 +171,79 @@ export default function ProgrammingLanguages() {
 
   return (
     <div className={styles.container}>
-      {/* HEADER */}
+      {/* PROFESSIONAL HEADER */}
       <div className={styles.header}>
-        <h2 className={styles.pageTitle}>Programming Languages</h2>
-        <hr className={styles.divider} />
+        <div className="mb-8">
+          <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-2 block">
+            Guided Learning
+          </span>
+          <h1 className={styles.mainHeading}>Interactive Academy</h1>
+          <div className="h-1.5 w-20 bg-indigo-600 rounded-full shadow-lg shadow-indigo-100"></div>
+        </div>
 
-        {/* LANGUAGE TABS */}
         <div className={styles.languageTabs}>
-          {filteredLanguages.map((lang) => (
+          {languages.map((lang) => (
             <button
               key={lang}
               onClick={() => {
                 setSelectedLang(lang);
                 setActiveTopic(null);
-                setSearch(""); // Clear search to show topics of the selected language
+                setSearch("");
               }}
-              className={`${styles.languageTab} ${selectedLang === lang ? styles.active : ""
-                }`}
-              aria-label={`Select ${lang}`}
-              aria-pressed={selectedLang === lang}
+              className={`${styles.languageTab} ${selectedLang === lang ? styles.active : ""}`}
             >
-              <span>{lang}</span>
+              {lang}
             </button>
           ))}
-          {filteredLanguages.length === 0 && sidebarTopics.length === 0 && search && (
-            <p className={styles.noLanguageMatch}>No matching results found</p>
-          )}
         </div>
 
-        {/* SEARCH */}
         <div className={styles.searchSection}>
-          <h1 className={styles.mainHeading}>Learn to Code</h1>
           <div className={styles.searchWrapper}>
-            <span className={styles.searchIcon} aria-hidden="true">
-              🔍
-            </span>
+            <span className={styles.searchIcon}>🔍</span>
             <input
               type="text"
-              placeholder="Search topics..."
+              placeholder="Search concepts, tags, or syntax..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={styles.searchInput}
-              aria-label="Search topics"
             />
           </div>
         </div>
       </div>
 
-      {/* MAIN CONTENT */}
+      {/* CORE WORKSPACE GRID */}
       <div className={styles.grid}>
-        {/* LEFT TOPICS PANEL - Side Navigation */}
-        <nav className={styles.topicsPanel} aria-label="Topics Sidebar">
+        {/* LEFT PANEL: NAVIGATION & PROGRESS */}
+        <nav className={styles.topicsPanel}>
           <div className={styles.sidebarProgress}>
             <div className={styles.sidebarHeader}>
-              <div className={styles.sidebarTitleRow}>
-                <span className={styles.sidebarIcon}>📚</span>
-                <span className={styles.sidebarTitle}>{selectedLang} Tutorial</span>
-              </div>
+              <span className={styles.sidebarTitle}>
+                <BookOpen size={16} />
+                {selectedLang} Tracks
+              </span>
               <span className={styles.sidebarPercent}>{progressPercentage}%</span>
             </div>
             <div className={styles.sidebarProgressTrack}>
               <div
                 className={styles.sidebarProgressFill}
                 style={{ width: `${progressPercentage}%` }}
-                role="progressbar"
-                aria-valuenow={progressPercentage}
-                aria-valuemin={0}
-                aria-valuemax={100}
               ></div>
             </div>
           </div>
+
           {loading ? (
-            <p className={styles.loadingTopics}>Loading topics...</p>
-          ) : sidebarTopics.length === 0 ? (
-            <p className={styles.emptyTopics}>No topics found</p>
+            <div className="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Initializing...</div>
           ) : (
             <ul className={styles.topicsList}>
               {sidebarTopics.map((topic) => (
                 <li
                   key={topic._id}
                   onClick={() => setActiveTopic(topic)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      setActiveTopic(topic);
-                    }
-                  }}
-                  className={`${styles.topicItem} ${currentTopic?._id === topic._id ? styles.active : ""
-                    }`}
-                  tabIndex={0}
-                  role="button"
-                  aria-pressed={currentTopic?._id === topic._id}
-                  aria-current={currentTopic?._id === topic._id ? "page" : undefined}
+                  className={`${styles.topicItem} ${currentTopic?._id === topic._id ? styles.active : ""}`}
                 >
-                  <div className={styles.topicTitleContent}>
-                    {topic.topic}
-                    {bookmarks.has(topic._id) && <span className={styles.bookmarkBadge} title="Bookmarked">★</span>}
+                  <div className="flex items-center justify-between w-full">
+                    <span className="truncate pr-2">{topic.topic}</span>
+                    {bookmarks.has(topic._id) && <span className="text-indigo-400 text-xs">★</span>}
                   </div>
                 </li>
               ))}
@@ -273,49 +251,31 @@ export default function ProgrammingLanguages() {
           )}
         </nav>
 
-        {/* CENTER CONTENT AREA */}
+        {/* CENTER PANEL: THEORETICAL NODE */}
         <main className={styles.contentArea}>
           {currentTopic ? (
-            <>
-              {/* Top Navigation & Actions */}
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className={styles.contentControls}>
                 <div className={styles.navButtons}>
-                  <button
-                    onClick={handlePrev}
-                    disabled={!hasPrev}
-                    className={styles.navButton}
-                    aria-label="Previous Topic"
-                  >
-                    ❮ Prev
+                  <button onClick={handlePrev} disabled={!hasPrev} className={styles.navButton}>
+                    ← PREVIOUS
                   </button>
-                  <button
-                    onClick={handleNext}
-                    disabled={!hasNext}
-                    className={styles.navButton}
-                    aria-label="Next Topic"
-                  >
-                    Next ❯
+                  <button onClick={handleNext} disabled={!hasNext} className={styles.navButton}>
+                    NEXT →
                   </button>
                 </div>
 
                 <button
                   onClick={() => toggleBookmark(currentTopic._id)}
                   className={`${styles.bookmarkBtn} ${bookmarks.has(currentTopic._id) ? styles.bookmarked : ''}`}
-                  aria-label={bookmarks.has(currentTopic._id) ? "Remove Bookmark" : "Add Bookmark"}
-                  title="Bookmark this topic"
                 >
                   {bookmarks.has(currentTopic._id) ? "★" : "☆"}
                 </button>
               </div>
 
-              <h2 className={styles.contentTitle}>{currentTopic.topic}</h2>
-
               <div className={styles.contentBody}>
                 {contentLoading ? (
-                  <div className={styles.contentLoading}>
-                    <div className={styles.loadingSpinner}></div>
-                    <p>Loading content...</p>
-                  </div>
+                  <div className="py-20 text-center text-slate-400 font-black uppercase tracking-widest text-xs animate-spin">Loading Data...</div>
                 ) : (
                   <TheoryContent
                     content={currentTopic.content}
@@ -324,75 +284,60 @@ export default function ProgrammingLanguages() {
                 )}
               </div>
 
-              <hr className={styles.contentDivider} />
-
-              {/* Bottom Navigation */}
               <div className={`${styles.navButtons} ${styles.bottomNav}`}>
-                <button
-                  onClick={handlePrev}
-                  disabled={!hasPrev}
-                  className={styles.navButton}
-                  aria-label="Previous Topic"
-                >
-                  ❮ Prev
+                <button onClick={handlePrev} disabled={!hasPrev} className={styles.navButton}>
+                  BACK TO PREV
                 </button>
-                <button
-                  onClick={handleNext}
-                  disabled={!hasNext}
-                  className={styles.navButton}
-                  aria-label="Next Topic"
-                >
-                  Next ❯
+                <button onClick={handleNext} disabled={!hasNext} className={styles.navButton}>
+                  CONTINUE READING
                 </button>
               </div>
-
-            </>
+            </div>
           ) : (
-            <div className={styles.emptyState}>
-              <div className={styles.emptyStateIcon}>👈</div>
-              <p>Select a topic to start learning</p>
+            <div className="h-full flex flex-col items-center justify-center text-center py-40">
+              <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center mb-6">
+                <span className="text-3xl grayscale opacity-30">📖</span>
+              </div>
+              <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Select a node to begin</p>
             </div>
           )}
         </main>
 
-        {/* RIGHT PANEL */}
+        {/* RIGHT PANEL: PERFORMANCE & CHALLENGES */}
         <div className={styles.rightPanel}>
-          {/* STREAK CARD */}
-          <div className={`${styles.card} ${styles.streakCard}`}>
-            <h3 className={styles.cardTitle}>
-              <span className={styles.streakIcon}>🔥</span>
-              Streak
-            </h3>
-            <div className={styles.streakCount}>{streak}</div>
-            <div className={styles.streakSubtitle}>Days in a row! Keep going!</div>
-          </div>
-
-
-
-          {/* PROBLEMS CARD */}
           <div className={styles.card}>
             <h3 className={styles.cardTitle}>
-              <span>📝</span> Coding Problems
+              <span className="text-lg">🔥</span>
+              Global Streak
+            </h3>
+            <div className="flex items-baseline gap-3">
+              <div className={styles.streakCount}>{streak}</div>
+              <span className="text-slate-400 font-black text-xs uppercase tracking-tighter">Days</span>
+            </div>
+          </div>
+
+          <div className={styles.card}>
+            <h3 className={styles.cardTitle}>
+              <Code2 size={16} className="text-indigo-600" />
+              Code Problems
             </h3>
             {loadingProblems ? (
-              <p className={styles.loadingTopics}>Loading problems...</p>
-            ) : problems.length === 0 ? (
-              <p className={styles.emptyTopics}>No problems available yet</p>
+              <div className="py-10 text-center text-slate-400 animate-pulse text-[10px] font-black uppercase tracking-widest">Scanning...</div>
             ) : (
               <ul className={styles.problemsList}>
                 {problems.map((problem) => (
                   <li
                     key={problem._id}
                     className={styles.problemItem}
-                    title={problem.description}
                     onClick={() => navigate(`/problem/${problem._id}`)}
-                    style={{ cursor: 'pointer' }}
                   >
-                    <div className={styles.problemLeft}>
-                      <span className={styles.checkIcon}>
-                        {problem.completed ? "✓" : "○"}
-                      </span>
-                      {problem.title}
+                    <div className="flex items-center gap-3">
+                      {problem.completed ? (
+                        <CheckCircle2 size={14} className="text-emerald-500" />
+                      ) : (
+                        <div className="w-2 h-2 rounded-full bg-slate-200"></div>
+                      )}
+                      <span className="text-xs font-bold text-slate-700 truncate max-w-[120px]">{problem.title}</span>
                     </div>
                     <span className={`${styles.difficultyBadge} ${styles[`difficulty${problem.difficulty}`]}`}>
                       {problem.difficulty}
@@ -404,6 +349,6 @@ export default function ProgrammingLanguages() {
           </div>
         </div>
       </div>
-    </div >
+    </div>
   );
 }

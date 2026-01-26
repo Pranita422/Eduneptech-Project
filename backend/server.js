@@ -19,6 +19,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Global logger for debugging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  if (req.method === 'POST') console.log("Body:", JSON.stringify(req.body));
+  next();
+});
+
 app.use("/api/auth", require("./routes/authRoutes"));
 // app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/nep", require("./routes/nepRoutes"));
@@ -31,6 +38,7 @@ app.use("/api/roadmaps", require("./routes/roadmapRoutes"));
 app.use("/api/notes", require("./routes/noteRoutes"));
 app.use("/api/certificates", require("./routes/certificateRoutes"));
 app.use("/api/progress", require("./routes/progressRoutes"));
+app.use("/api/submissions", require("./routes/submissionRoutes"));
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

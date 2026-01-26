@@ -263,7 +263,7 @@ export default function TheoryContent({ content, className = '' }) {
                             </ol>
                         );
                     case 'hr':
-                        return <hr key={idx} className={styles.divider} />;
+                        return <div key={idx} className={styles.divider} />;
                     default:
                         return null;
                 }
