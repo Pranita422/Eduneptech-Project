@@ -12,6 +12,8 @@ import RoadmapDashboard from "./pages/RoadmapDashboard";
 import RoadmapView from "./pages/RoadmapView";
 import AptitudeDashboard from "./pages/AptitudeDashboard";
 import AptitudeTest from "./pages/AptitudeTest";
+import ForgotPassword from "./pages/ForgotPassword";
+import ProtectedRoute from "./context/ProtectedRoute";
 
 function App() {
   return (
@@ -20,27 +22,39 @@ function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* Dashboard with Nested Routes */}
-          <Route path="/dashboard" element={<Dashboard />}>
+          {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          >
             <Route path="aptitude" element={<AptitudeDashboard />} />
             <Route path="aptitude/:category" element={<AptitudeTest />} />
-
-            {/* Roadmaps */}
             <Route path="roadmaps" element={<RoadmapDashboard />} />
             <Route path="roadmap/:slug" element={<RoadmapView />} />
           </Route>
 
           <Route
             path="/programming-languages"
-            element={<ProgrammingLanguages />}
+            element={
+              <ProtectedRoute>
+                <ProgrammingLanguages />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/problem/:id"
-            element={<ProblemWorkspace />}
+            element={
+              <ProtectedRoute>
+                <ProblemWorkspace />
+              </ProtectedRoute>
+            }
           />
-
-          {/* Legacy Roadmap Routes Removed */}
         </Routes>
       </StreakProvider>
     </Router>

@@ -1,6 +1,6 @@
 export const fetchMcqs = async (course, year) => {
   const res = await fetch(
-    `http://localhost:5000/api/mcqs?course=${course}&year=${year}`
+    `http://localhost:5001/api/mcqs?course=${course}&year=${year}`
   );
 
   if (!res.ok) {

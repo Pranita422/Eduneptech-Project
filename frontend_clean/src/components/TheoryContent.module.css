@@ -3,6 +3,11 @@
     color: #334155;
     line-height: 1.8;
     max-width: 900px;
+    transition: color 0.3s ease;
+}
+
+:global(.dark) .theoryContent {
+    color: #cbd5e1;
 }
 
 .heading {
@@ -12,6 +17,11 @@
     margin-bottom: 2rem;
     letter-spacing: -0.02em;
     font-family: 'Outfit', sans-serif;
+    transition: color 0.3s ease;
+}
+
+:global(.dark) .heading {
+    color: #f8fafc;
 }
 
 .subheading {
@@ -20,6 +30,11 @@
     color: #1e293b;
     margin: 3rem 0 1.25rem;
     font-family: 'Outfit', sans-serif;
+    transition: color 0.3s ease;
+}
+
+:global(.dark) .subheading {
+    color: #f1f5f9;
 }
 
 .paragraph {
@@ -30,6 +45,11 @@
 .bold {
     font-weight: 700;
     color: #000;
+    transition: color 0.3s ease;
+}
+
+:global(.dark) .bold {
+    color: #fff;
 }
 
 .bulletList,
@@ -75,6 +95,12 @@
     border-radius: 0.5rem;
     font-family: monospace;
     font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+:global(.dark) .inlineCode {
+    background-color: #1e293b;
+    color: #818cf8;
 }
 
 .divider {
@@ -82,4 +108,8 @@
     border: none;
     height: 1px;
     background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+}
+
+:global(.dark) .divider {
+    background: linear-gradient(90deg, transparent, #334155, transparent);
 }

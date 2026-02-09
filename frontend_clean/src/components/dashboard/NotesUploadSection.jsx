@@ -107,7 +107,7 @@ function NotesUploadSection() {
 
     return (
         <section className="animate-in zoom-in duration-500 max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-8 text-violet-800 border-b-2 border-violet-100 pb-2">
+            <h2 className="text-3xl font-bold mb-8 text-primary border-b-2 border-border pb-2">
                 📝 Upload Notes
             </h2>
 
@@ -142,8 +142,8 @@ function NotesUploadSection() {
                                 <>
                                     <div className="text-4xl mb-4 text-violet-300">📂</div>
                                     <p className="text-gray-500 mb-2 text-center text-sm">Drag & Drop files here</p>
-                                    <p className="text-xs text-gray-400 mb-4">PDF, DOCX, PNG, JPG (Max 10MB)</p>
-                                    <label className="cursor-pointer bg-white text-violet-600 border border-violet-200 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-violet-50 transition-all">
+                                    <p className="text-xs text-text-muted mb-4">PDF, DOCX, PNG, JPG (Max 10MB)</p>
+                                    <label className="cursor-pointer bg-surface text-primary border border-primary/20 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-surface-highlight transition-all">
                                         Browse Computer
                                         <input type="file" className="hidden" onChange={handleFileChange} />
                                     </label>
@@ -153,23 +153,23 @@ function NotesUploadSection() {
 
                         {/* Metadata Inputs */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                            <label className="block text-sm font-medium text-text-secondary mb-1">Title *</label>
                             <input
                                 type="text"
                                 required
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                                className="w-full px-4 py-3 rounded-xl border border-border bg-surface-highlight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-text-primary"
                                 placeholder="e.g. Physics Formula Sheet"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <label className="block text-sm font-medium text-text-secondary mb-1">Description</label>
                             <textarea
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all h-24 resize-none"
+                                className="w-full px-4 py-3 rounded-xl border border-border bg-surface-highlight focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-24 resize-none text-text-primary"
                                 placeholder="Short description about the notes..."
                             />
                         </div>
@@ -177,7 +177,7 @@ function NotesUploadSection() {
                         <button
                             type="submit"
                             disabled={uploading || !file || !title}
-                            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all ${uploading || !file || !title ? 'bg-gray-300 cursor-not-allowed' : 'bg-violet-600 hover:bg-violet-700 hover:shadow-violet-200 transform hover:-translate-y-0.5'}`}
+                            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all ${uploading || !file || !title ? 'bg-muted cursor-not-allowed' : 'bg-primary hover:bg-primary-fg hover:shadow-primary/20 transform hover:-translate-y-0.5'}`}
                         >
                             {uploading ? "Uploading..." : "Upload Note"}
                         </button>
@@ -186,32 +186,32 @@ function NotesUploadSection() {
 
                 {/* Notes List */}
                 <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-gray-800 flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-text-primary flex items-center justify-between">
                         Your Library
-                        <span className="bg-violet-100 text-violet-600 text-xs px-2 py-1 rounded-full">{notes.length} Items</span>
+                        <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">{notes.length} Items</span>
                     </h3>
 
                     {loadingNotes ? (
-                        <p className="text-center text-gray-400 py-10">Loading library...</p>
+                        <p className="text-center text-text-muted py-10">Loading library...</p>
                     ) : notes.length === 0 ? (
-                        <div className="bg-white rounded-3xl p-10 text-center border border-gray-100 shadow-sm">
+                        <div className="bg-surface rounded-3xl p-10 text-center border border-border shadow-sm">
                             <div className="text-5xl mb-4 opacity-50">📚</div>
-                            <p className="text-gray-500">Your library is empty.</p>
-                            <p className="text-sm text-gray-400">Upload your first note to get started!</p>
+                            <p className="text-text-muted">Your library is empty.</p>
+                            <p className="text-sm text-text-muted">Upload your first note to get started!</p>
                         </div>
                     ) : (
                         <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                             {notes.map((note) => (
-                                <div key={note._id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group relative">
+                                <div key={note._id} className="bg-surface p-5 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow group relative">
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start space-x-4">
-                                            <div className="w-12 h-12 bg-violet-50 rounded-xl flex items-center justify-center text-2xl text-violet-600 shrink-0">
+                                            <div className="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center text-2xl text-primary shrink-0">
                                                 {note.fileType.includes("pdf") ? "📕" : note.fileType.includes("image") ? "🖼️" : "📄"}
                                             </div>
                                             <div>
-                                                <h4 className="font-bold text-gray-800 leading-tight mb-1">{note.title}</h4>
-                                                <p className="text-sm text-gray-500 line-clamp-2 mb-2">{note.description}</p>
-                                                <div className="flex items-center space-x-3 text-xs text-gray-400">
+                                                <h4 className="font-bold text-text-primary leading-tight mb-1">{note.title}</h4>
+                                                <p className="text-sm text-text-muted line-clamp-2 mb-2">{note.description}</p>
+                                                <div className="flex items-center space-x-3 text-xs text-text-muted">
                                                     <span>{(note.size / 1024).toFixed(1)} KB</span>
                                                     <span>•</span>
                                                     <span>{new Date(note.createdAt).toLocaleDateString()}</span>
@@ -224,15 +224,15 @@ function NotesUploadSection() {
                                                 href={`${API_BASE_URL.replace('/api', '')}${note.filePath}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-white bg-violet-600 hover:bg-violet-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors text-center"
+                                                className="text-white bg-primary hover:bg-primary-fg px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors text-center"
                                             >
                                                 View
                                             </a>
                                             <button
                                                 onClick={() => handleDeleteClick(note._id)}
                                                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${confirmDeleteId === note._id
-                                                        ? "bg-red-600 text-white shadow-md scale-105"
-                                                        : "text-red-500 bg-red-50 hover:bg-red-100"
+                                                    ? "bg-red-600 text-white shadow-md scale-105"
+                                                    : "text-red-500 bg-red-50 hover:bg-red-100"
                                                     }`}
                                             >
                                                 {confirmDeleteId === note._id ? "Confirm?" : "Delete"}

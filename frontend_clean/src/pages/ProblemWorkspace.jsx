@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { API_BASE_URL } from "../data/dashboardData";
+import API from "../api/axios";
+import { useStreak } from "../context/StreakContext";
 import styles from "./ProblemWorkspace.module.css";
 
 const ProblemWorkspace = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { refreshStreak } = useStreak();
     const [problem, setProblem] = useState(null);
     const [code, setCode] = useState("");
     const [loading, setLoading] = useState(true);
@@ -20,7 +21,7 @@ const ProblemWorkspace = () => {
     useEffect(() => {
         const fetchProblem = async () => {
             try {
-                const res = await axios.get(`${API_BASE_URL}/problems/${id}`);
+                const res = await API.get(`/problems/${id}`);
                 setProblem(res.data);
                 // Default code template based on language
                 if (res.data.language.toLowerCase() === "javascript") {
@@ -43,9 +44,8 @@ const ProblemWorkspace = () => {
         setLoadingHistory(true);
         try {
             const userStr = localStorage.getItem("user");
-            if (!userStr) return;
-            const user = JSON.parse(userStr);
-            const res = await axios.get(`${API_BASE_URL}/submissions?userId=${user.id || user._id}&problemId=${id}`);
+            // rely on token for user ID
+            const res = await API.get(`/submissions?problemId=${id}`);
             setSubmissions(res.data);
         } catch (err) {
             console.error("Failed to fetch history", err);
@@ -91,7 +91,7 @@ const ProblemWorkspace = () => {
                 code: code.substring(0, 50) + "..."
             });
 
-            const res = await axios.post(`${API_BASE_URL}/submissions`, {
+            const res = await API.post(`/submissions`, {
                 userId,
                 problemId: id,
                 language: problem.language,
@@ -100,6 +100,12 @@ const ProblemWorkspace = () => {
 
             console.log("[Frontend] Submission Response:", res.data);
             setResult(res.data);
+
+            // Refresh streak if problem was accepted
+            if (res.data.result === "Accepted") {
+                await refreshStreak();
+                console.log("[Frontend] Streak refreshed after successful submission");
+            }
 
             if (activeTab === "submissions") fetchHistory();
         } catch (err) {
@@ -136,7 +142,7 @@ const ProblemWorkspace = () => {
             <header className={styles.header}>
                 <Link to="/programming-languages" className={styles.backBtn}>
                     <span className="text-xl">←</span>
-                    <span>Back to Challenges</span>
+                    <span>Back to Programming Languages</span>
                 </Link>
                 <div className="flex items-center gap-3">
                     <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Workspace v1.2</span>
@@ -188,13 +194,13 @@ const ProblemWorkspace = () => {
                                 {problem.examples && problem.examples.map((ex, i) => (
                                     <div key={i} className={styles.example}>
                                         <div className="flex items-center gap-2 mb-3">
-                                            <div className="w-5 h-5 rounded bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">{i + 1}</div>
-                                            <span className="text-xs font-black text-slate-900 uppercase">Case {i + 1}</span>
+                                            <div className="w-5 h-5 rounded bg-surface-highlight flex items-center justify-center text-[10px] font-bold text-text-muted">{i + 1}</div>
+                                            <span className="text-xs font-black text-text-primary uppercase">Case {i + 1}</span>
                                         </div>
                                         <div className="space-y-2 text-sm font-medium">
-                                            <div className="flex gap-2"><span className="text-slate-400 w-16 invisible lg:visible">Input</span> <code className="bg-slate-50 px-2 py-1 rounded text-indigo-600">{ex.input}</code></div>
-                                            <div className="flex gap-2"><span className="text-slate-400 w-16 invisible lg:visible">Output</span> <code className="bg-slate-50 px-2 py-1 rounded text-emerald-600">{ex.output}</code></div>
-                                            {ex.explanation && <div className="mt-3 pt-3 border-t border-slate-100 text-slate-400 italic text-xs">Note: {ex.explanation}</div>}
+                                            <div className="flex gap-2"><span className="text-text-secondary w-16 invisible lg:visible">Input</span> <code className="bg-surface-highlight px-2 py-1 rounded text-primary">{ex.input}</code></div>
+                                            <div className="flex gap-2"><span className="text-text-secondary w-16 invisible lg:visible">Output</span> <code className="bg-surface-highlight px-2 py-1 rounded text-emerald-500">{ex.output}</code></div>
+                                            {ex.explanation && <div className="mt-3 pt-3 border-t border-border text-text-muted italic text-xs">Note: {ex.explanation}</div>}
                                         </div>
                                     </div>
                                 ))}
@@ -204,8 +210,8 @@ const ProblemWorkspace = () => {
                                         <h3 className={styles.sectionTitle}>Constraints</h3>
                                         <ul className="space-y-2">
                                             {problem.constraints.map((c, i) => (
-                                                <li key={i} className="flex gap-2 text-sm font-medium text-slate-500">
-                                                    <span className="text-indigo-400">•</span> {c}
+                                                <li key={i} className="flex gap-2 text-sm font-medium text-text-secondary">
+                                                    <span className="text-primary">•</span> {c}
                                                 </li>
                                             ))}
                                         </ul>

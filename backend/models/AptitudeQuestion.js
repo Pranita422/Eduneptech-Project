@@ -4,7 +4,7 @@ const AptitudeQuestionSchema = new mongoose.Schema({
     category: {
         type: String,
         required: true,
-        enum: ["Quantitative", "Logical Reasoning", "Verbal Ability"],
+        enum: ["Quantitative", "Logical Reasoning", "Verbal Ability", "Data Structures"],
     },
     question: {
         type: String,

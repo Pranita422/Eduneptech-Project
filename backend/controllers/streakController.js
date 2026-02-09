@@ -1,15 +1,22 @@
 //streakCOntroller.js
 const User = require("../models/User");
 
-// Helper: Check Day Difference
-const getDayDifference = (date1, date2) => {
-    const d1 = new Date(date1);
-    const d2 = new Date(date2);
-    d1.setHours(0, 0, 0, 0);
-    d2.setHours(0, 0, 0, 0);
+// Helper: Get UTC start of day (midnight 00:00:00 UTC)
+// This ensures consistent date storage and comparison across timezones
+const getUTCStartOfDay = (date) => {
+    const d = new Date(date);
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+};
 
-    const diffTime = Math.abs(d2 - d1);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+// Helper: Calculate day difference using UTC dates
+// Returns positive number if date2 is after date1, negative if before, 0 if same day
+const getDayDifference = (date1, date2) => {
+    const utcDate1 = getUTCStartOfDay(date1);
+    const utcDate2 = getUTCStartOfDay(date2);
+
+    const diffTime = utcDate2.getTime() - utcDate1.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
     return diffDays;
 };
 
@@ -20,49 +27,69 @@ exports.checkAndUpdateStreak = async (userId, activity = "General Activity") => 
 
     const today = new Date();
     const lastActive = user.lastActiveDate ? new Date(user.lastActiveDate) : null;
-    let message = "Streak updated";
-    let streakIncremented = false;
-    let diff = 0;
+    let message = "Activity tracked";
 
-    if (!lastActive) {
-        // First time activity
-        user.streak = 1;
-        user.lastActiveDate = today;
-        streakIncremented = true;
-    } else {
-        diff = getDayDifference(lastActive, today);
+    user.lastActiveDate = today;
 
-        if (diff === 0) {
-            // Same day, do nothing (or just update timestamp)
-            message = "Already active today";
-        } else if (diff === 1) {
-            // Consecutive day, increment
-            user.streak += 1;
-            user.lastActiveDate = today;
-            message = "Streak incremented! Keep it up!";
-            streakIncremented = true;
-        } else {
-            // Missed a day or more, reset
-            user.streak = 1;
-            user.lastActiveDate = today;
-            message = "Streak reset. Start fresh!";
-            streakIncremented = true; // Technically a new streak
-        }
-    }
-
-    // Add history if streak changed or for activity log
-    if (streakIncremented || diff > 0) {
-        user.streakHistory.push({ date: today, activity });
-    }
+    // Log activity in history
+    user.streakHistory.push({ date: today, activity });
 
     await user.save();
     return { streak: user.streak, message, user };
 };
 
+// New: Problem-Based Streak Logic (LeetCode Style)
+exports.updateProblemStreak = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) return null;
+
+    // Get today's date normalized to UTC midnight
+    const todayNormalized = getUTCStartOfDay(new Date());
+    const lastSolved = user.lastSolvedDate ? new Date(user.lastSolvedDate) : null;
+    let message = "Streak updated";
+
+    if (!lastSolved) {
+        // First problem solved ever
+        user.streak = 1;
+        user.lastSolvedDate = todayNormalized;  // Store normalized UTC date
+        message = "First problem solved! Streak started! 🔥";
+    } else {
+        const diff = getDayDifference(lastSolved, todayNormalized);
+
+        if (diff === 0) {
+            // Same day - no change to streak
+            message = "Problem solved! Streak maintained for today. ✅";
+        } else if (diff === 1) {
+            // Exactly one day later - increment streak
+            user.streak += 1;
+            user.lastSolvedDate = todayNormalized;  // Store normalized UTC date
+            message = "Streak incremented! Keep it up! 🔥";
+        } else if (diff > 1) {
+            // Gap > 1 day - reset to 1
+            user.streak = 1;
+            user.lastSolvedDate = todayNormalized;  // Store normalized UTC date
+            message = "Streak reset to 1. Consistency is key! ⏳";
+        } else {
+            // diff < 0 (future date in DB - shouldn't happen, but handle gracefully)
+            // This could occur if server time goes backward or data corruption
+            message = "Date anomaly detected. Streak maintained.";
+            console.warn(`[Streak] Negative day difference detected for user ${userId}: ${diff} days`);
+        }
+    }
+
+    // Update longest streak
+    if (user.streak > (user.longestStreak || 0)) {
+        user.longestStreak = user.streak;
+    }
+
+    await user.save();
+    return { streak: user.streak, longestStreak: user.longestStreak, message };
+};
+
 // Check and Update Streak Logic (Endpoint)
 exports.updateStreak = async (req, res) => {
     try {
-        const userId = req.user?.id || req.body.userId; // Handle both auth middleware and direct calls if needed
+        const userId = req.user?.id || req.body.userId;
         if (!userId) return res.status(400).json({ message: "User ID required" });
 
         const activity = req.body?.activity || "General Activity";
@@ -80,16 +107,18 @@ exports.updateStreak = async (req, res) => {
 
 exports.getStreak = async (req, res) => {
     try {
-        // We can allow getting streak with just a query param if not strictly protected, 
-        // but usually it should be protected. Assuming protected route with req.user from middleware.
-        // If not, we'll try to get from query/body for flexibility during dev.
         const userId = req.user?.id || req.query.userId;
         if (!userId) return res.status(400).json({ message: "User ID required" });
 
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        res.json({ streak: user.streak, lastActiveDate: user.lastActiveDate });
+        res.json({
+            streak: user.streak,
+            longestStreak: user.longestStreak || 0,
+            lastActiveDate: user.lastActiveDate,
+            lastSolvedDate: user.lastSolvedDate
+        });
     } catch (error) {
         res.status(500).json({ message: "Server error fetching streak" });
     }

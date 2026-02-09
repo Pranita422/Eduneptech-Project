@@ -4,3 +4,55 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 252 253 254;
+        /* #fcfdfe */
+        --surface: 255 255 255;
+        /* #ffffff */
+        --surface-highlight: 248 250 252;
+        /* slate-50 */
+        --text-primary: 15 23 42;
+        /* slate-900 */
+        --text-secondary: 71 85 105;
+        /* slate-600 */
+        --text-muted: 148 163 184;
+        /* slate-400 */
+        --border: 241 245 249;
+        /* slate-100 */
+        --border-highlight: 226 232 240;
+        /* slate-200 */
+        --primary: 79 70 229;
+        /* indigo-600 */
+        --primary-fg: 255 255 255;
+    }
+
+    .dark {
+        --background: 2 6 23;
+        /* slate-950 */
+        --surface: 15 23 42;
+        /* slate-900 */
+        --surface-highlight: 30 41 59;
+        /* slate-800 */
+        --text-primary: 255 255 255;
+        /* white */
+        --text-secondary: 203 213 225;
+        /* slate-300 */
+        --text-muted: 148 163 184;
+        /* slate-400 */
+        --border: 30 41 59;
+        /* slate-800 */
+        --border-highlight: 51 65 85;
+        /* slate-700 */
+        --primary: 99 102 241;
+        /* indigo-500 */
+        --primary-fg: 255 255 255;
+    }
+}
+
+@layer base {
+    body {
+        @apply bg-background text-text-primary transition-colors duration-500;
+    }
+}

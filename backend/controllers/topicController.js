@@ -17,16 +17,8 @@ exports.markTopicComplete = async (req, res) => {
       await topic.save();
     }
 
-    // Update Streak (always update streak for activity)
-    const { user } = await streakController.checkAndUpdateStreak(userId, `Completed topic: ${topic.topic}`);
-
-    if (user && !isAlreadyCompleted) {
-      const lang = topic.language ? topic.language.toLowerCase() : null;
-      if (lang && user.progress && user.progress[lang] !== undefined) {
-        user.progress[lang] += 1;
-        await user.save();
-      }
-    }
+    // Update Streak
+    await streakController.checkAndUpdateStreak(userId, `Completed topic: ${topic.topic}`);
 
     return res.json({ message: "Topic marked as complete", topicId, isNewCompletion: !isAlreadyCompleted });
 
@@ -38,7 +30,7 @@ exports.markTopicComplete = async (req, res) => {
 
 exports.getTopics = async (req, res) => {
   try {
-    const { language, search } = req.query;
+    const { language, search, userId } = req.query;
 
     let query = {};
     if (language) query.language = language;
@@ -46,9 +38,15 @@ exports.getTopics = async (req, res) => {
       query.topic = { $regex: search, $options: "i" };
     }
 
-    const topics = await Topic.find(query).sort({ order: 1 });
+    const topics = await Topic.find(query).sort({ order: 1 }).lean();
 
-    res.status(200).json(topics);
+    // Map completion status if userId is provided
+    const topicsWithStatus = topics.map(t => ({
+      ...t,
+      isCompleted: userId ? t.completedBy.some(id => id.toString() === userId) : false
+    }));
+
+    res.status(200).json(topicsWithStatus);
   } catch (error) {
     console.error("Error fetching topics:", error);
     res.status(500).json({ message: "Error fetching topics" });

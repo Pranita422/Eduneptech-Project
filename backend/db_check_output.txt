@@ -1,4 +1,0 @@
-Unique courses found in database:
-FULL_COURSE_NAME: [B.Sc Information Technology]
-FULL_COURSE_NAME: [B.Sc Computer Science]
-FULL_COURSE_NAME: [undefined]

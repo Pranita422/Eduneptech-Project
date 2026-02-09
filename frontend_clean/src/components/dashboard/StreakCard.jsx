@@ -33,20 +33,31 @@ const StreakCard = () => {
 export default StreakCard;*/
 
 // StreakCard.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useStreak } from "../../context/StreakContext";
 
 const StreakCard = () => {
-  const { streak, loading } = useStreak();
+  const { streak, longestStreak, lastSolvedDate, loading, fetchStreak, refreshStreak } = useStreak();
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
+  useEffect(() => {
+    fetchStreak();
+  }, []);
+
+  const isSolvedToday = lastSolvedDate ? new Date(lastSolvedDate).toDateString() === new Date().toDateString() : false;
   const goal = 7;
   const progress = Math.min((streak / goal) * 100, 100);
 
   const getMessage = () => {
-    if (streak === 0) return "Start your streak today 🚀";
-    if (streak < 3) return "Nice start 🌱";
-    if (streak < 7) return "You're building a habit 🔥";
-    return "Streak Master 👑";
+    if (streak === 0) return "Start your daily challenge 🚀";
+    if (isSolvedToday) return "Daily challenge complete! 🔥";
+    return "Solve a problem to save your streak! ⏳";
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refreshStreak();
+    setTimeout(() => setIsRefreshing(false), 500); // Small delay for UX
   };
 
   if (loading) {
@@ -60,38 +71,57 @@ const StreakCard = () => {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
       <div className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Daily Momentum</h3>
-          <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
-            <span className="text-lg animate-pulse">🔥</span>
+          <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Daily Momentum</h3>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors disabled:opacity-50"
+              title="Refresh streak"
+            >
+              <svg
+                className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-500 ${isSolvedToday ? 'bg-orange-500 shadow-lg shadow-orange-200' : 'bg-slate-100 dark:bg-slate-800'}`}>
+              <span className={`text-xl ${isSolvedToday ? 'animate-bounce' : 'opacity-40 grayscale'}`}>
+                {isSolvedToday ? '🔥' : '⌛'}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Streak Count */}
         <div className="flex items-baseline gap-2 mb-1">
-          <div className="text-5xl font-black text-slate-900 group-hover:scale-105 transition-transform origin-left">
+          <div className="text-5xl font-black text-slate-900 dark:text-white group-hover:scale-105 transition-transform origin-left">
             {streak}
           </div>
-          <span className="text-slate-400 font-bold">days</span>
+          <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[10px] tracking-widest">Day Streak</span>
         </div>
 
         {/* Message */}
-        <p className="text-sm text-slate-500 font-medium mb-6">
+        <p className={`text-sm font-bold mb-6 transition-colors ${isSolvedToday ? 'text-emerald-600' : 'text-slate-500'}`}>
           {getMessage()}
         </p>
 
         {/* Progress Bar Container */}
         <div className="space-y-2">
           <div className="flex justify-between items-end">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Weekly Goal</span>
-            <span className="text-xs font-bold text-indigo-600">{streak}/{goal}</span>
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">Weekly Goal</span>
+            <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">{streak}/{goal}</span>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-50">
+          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-100 dark:border-slate-700">
             <div
-              className="bg-indigo-600 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(79,70,229,0.4)]"
+              className={`h-full rounded-full transition-all duration-1000 ease-out ${isSolvedToday ? 'bg-indigo-600 shadow-[0_0_12px_rgba(79,70,229,0.5)]' : 'bg-slate-300 dark:bg-slate-600'}`}
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -99,8 +129,12 @@ const StreakCard = () => {
       </div>
 
       {/* Footer Decoration */}
-      <div className="bg-slate-50 px-6 py-3 border-t border-slate-100">
-        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Next milestone: 7 Day Master</div>
+      <div className="bg-slate-50 dark:bg-slate-950 px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tight">Personal Best</div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-black text-slate-900 dark:text-white">{longestStreak}</span>
+          <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Days</span>
+        </div>
       </div>
     </div>
   );

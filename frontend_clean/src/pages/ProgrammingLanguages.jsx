@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./ProgrammingLanguages.module.css";
-import axios from "axios";
-import { API_BASE_URL } from "../data/dashboardData";
+import API from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 import { useStreak } from "../context/StreakContext";
 import TheoryContent from "../components/TheoryContent";
 import { BookOpen, Code2, CheckCircle2 } from "lucide-react";
 
 const languages = ["HTML", "JavaScript", "C", "C++", "Java", "Python", "CSS"];
 
-// No mock problems needed anymore as we fetch from database
-
 export default function ProgrammingLanguages() {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [selectedLang, setSelectedLang] = useState("HTML");
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -28,12 +27,9 @@ export default function ProgrammingLanguages() {
   // Fetch user progress
   useEffect(() => {
     const fetchUserProgress = async () => {
+      if (!currentUser) return;
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-        const res = await axios.get(`${API_BASE_URL}/progress/dashboard`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await API.get("/progress/dashboard");
         if (res.data && res.data.user) {
           setUserProgress(res.data.user.progress);
         }
@@ -42,21 +38,16 @@ export default function ProgrammingLanguages() {
       }
     };
     fetchUserProgress();
-  }, [selectedLang]); // Refresh when language changes or on mount
+  }, [selectedLang, currentUser]);
 
   // Debounce search input
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
-      // Reset active topic when search changes to show the first search result automatically
-      if (search) {
-        setActiveTopic(null);
-      }
-    }, 300); // 300ms debounce delay
+      if (search) setActiveTopic(null);
+    }, 300);
 
-    return () => {
-      clearTimeout(handler);
-    };
+    return () => clearTimeout(handler);
   }, [search]);
 
   // Fetch topics from backend
@@ -64,12 +55,9 @@ export default function ProgrammingLanguages() {
     const fetchTopics = async () => {
       setLoading(true);
       try {
-        // Fetch ALL topics for the language to allow uninterrupted navigation
-        const response = await axios.get(
-          `${API_BASE_URL}/topics?language=${encodeURIComponent(selectedLang)}`
-        );
+        const userId = currentUser?._id || currentUser?.id;
+        const response = await API.get(`/topics?language=${encodeURIComponent(selectedLang)}${userId ? `&userId=${userId}` : ""}`);
         setTopics(response.data);
-        // Reset active topic only when language changes
         setActiveTopic(null);
       } catch (error) {
         console.error("Error fetching topics:", error);
@@ -80,16 +68,14 @@ export default function ProgrammingLanguages() {
     };
 
     fetchTopics();
-  }, [selectedLang]); // Only refetch when language changes
+  }, [selectedLang, currentUser]);
 
   // Fetch problems for the selected language
   useEffect(() => {
     const fetchProblems = async () => {
       setLoadingProblems(true);
       try {
-        const response = await axios.get(
-          `${API_BASE_URL}/problems?language=${encodeURIComponent(selectedLang)}`
-        );
+        const response = await API.get(`/problems?language=${encodeURIComponent(selectedLang)}`);
         setProblems(response.data);
       } catch (error) {
         console.error("Error fetching problems:", error);
@@ -113,9 +99,6 @@ export default function ProgrammingLanguages() {
   );
 
   // Determine current active topic
-  // 1. Manually selected topic (activeTopic)
-  // 2. First search result (if searching and results exist)
-  // 3. First overall topic (if not searching or no search results)
   const currentTopic = activeTopic || (debouncedSearch && sidebarTopics.length > 0 ? sidebarTopics[0] : (topics.length > 0 ? topics[0] : null));
 
   // Use the FULL topics list for navigation logic so Prev/Next always work
@@ -161,18 +144,39 @@ export default function ProgrammingLanguages() {
     setBookmarks(newBookmarks);
   };
 
-  // Calculate overall language progress (mocked for now as we don't have completion status in DB)
-  const completedCount = topics.filter(t => t.completed).length;
-  const totalTopics = topics.length;
-  const languageProgress = totalTopics > 0 ? Math.round((completedCount / totalTopics) * 100) : 0;
+  // Mark topic as complete
+  const markAsComplete = async () => {
+    if (!currentTopic || !currentUser) return;
+    try {
+      const userId = currentUser?._id || currentUser?.id;
+      await API.post("/topics/complete", { topicId: currentTopic._id, userId });
+      // Update local state to show checkmark immediately
+      setTopics(prev => prev.map(t => t._id === currentTopic._id ? { ...t, isCompleted: true } : t));
+      // Refresh overall progress
+      const res = await API.get("/progress/dashboard");
+      if (res.data && res.data.user) {
+        setUserProgress(res.data.user.progress);
+      }
+    } catch (err) {
+      console.error("Failed to mark topic as complete", err);
+    }
+  };
 
-  // Real problem progress
+  // Real progress from backend
   const progressPercentage = userProgress[selectedLang.toLowerCase()] || 0;
 
   return (
     <div className={styles.container}>
       {/* PROFESSIONAL HEADER */}
       <div className={styles.header}>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className={styles.backBtn}
+        >
+          <span className="text-xl">←</span>
+          <span>Back to Dashboard</span>
+        </button>
+
         <div className="mb-8">
           <span className="text-[10px] font-black text-indigo-600 uppercase tracking-[0.2em] mb-2 block">
             Guided Learning
@@ -221,7 +225,6 @@ export default function ProgrammingLanguages() {
                 <BookOpen size={16} />
                 {selectedLang} Tracks
               </span>
-              <span className={styles.sidebarPercent}>{progressPercentage}%</span>
             </div>
             <div className={styles.sidebarProgressTrack}>
               <div
@@ -232,7 +235,7 @@ export default function ProgrammingLanguages() {
           </div>
 
           {loading ? (
-            <div className="py-10 text-center text-slate-400 font-bold uppercase tracking-widest text-[10px] animate-pulse">Initializing...</div>
+            <div className="py-10 text-center text-text-muted font-bold uppercase tracking-widest text-[10px] animate-pulse">Initializing...</div>
           ) : (
             <ul className={styles.topicsList}>
               {sidebarTopics.map((topic) => (
@@ -242,7 +245,14 @@ export default function ProgrammingLanguages() {
                   className={`${styles.topicItem} ${currentTopic?._id === topic._id ? styles.active : ""}`}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="truncate pr-2">{topic.topic}</span>
+                    <div className="flex items-center gap-2">
+                      {topic.isCompleted ? (
+                        <CheckCircle2 size={12} className="text-emerald-500" />
+                      ) : (
+                        <div className="w-1.5 h-1.5 rounded-full bg-border"></div>
+                      )}
+                      <span className="truncate pr-2">{topic.topic}</span>
+                    </div>
                     {bookmarks.has(topic._id) && <span className="text-indigo-400 text-xs">★</span>}
                   </div>
                 </li>
@@ -265,17 +275,27 @@ export default function ProgrammingLanguages() {
                   </button>
                 </div>
 
-                <button
-                  onClick={() => toggleBookmark(currentTopic._id)}
-                  className={`${styles.bookmarkBtn} ${bookmarks.has(currentTopic._id) ? styles.bookmarked : ''}`}
-                >
-                  {bookmarks.has(currentTopic._id) ? "★" : "☆"}
-                </button>
+                <div className="flex items-center gap-4">
+                  {!currentTopic.isCompleted && (
+                    <button
+                      onClick={markAsComplete}
+                      className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-emerald-100 hover:bg-emerald-100 transition-colors"
+                    >
+                      Mark as Complete
+                    </button>
+                  )}
+                  <button
+                    onClick={() => toggleBookmark(currentTopic._id)}
+                    className={`${styles.bookmarkBtn} ${bookmarks.has(currentTopic._id) ? styles.bookmarked : ''}`}
+                  >
+                    {bookmarks.has(currentTopic._id) ? "★" : "☆"}
+                  </button>
+                </div>
               </div>
 
               <div className={styles.contentBody}>
                 {contentLoading ? (
-                  <div className="py-20 text-center text-slate-400 font-black uppercase tracking-widest text-xs animate-spin">Loading Data...</div>
+                  <div className="py-20 text-center text-text-muted font-black uppercase tracking-widest text-xs animate-spin">Loading Data...</div>
                 ) : (
                   <TheoryContent
                     content={currentTopic.content}
@@ -295,10 +315,10 @@ export default function ProgrammingLanguages() {
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center py-40">
-              <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center mb-6">
+              <div className="w-16 h-16 rounded-3xl bg-surface-highlight flex items-center justify-center mb-6">
                 <span className="text-3xl grayscale opacity-30">📖</span>
               </div>
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Select a node to begin</p>
+              <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">Select a node to begin</p>
             </div>
           )}
         </main>
@@ -312,7 +332,7 @@ export default function ProgrammingLanguages() {
             </h3>
             <div className="flex items-baseline gap-3">
               <div className={styles.streakCount}>{streak}</div>
-              <span className="text-slate-400 font-black text-xs uppercase tracking-tighter">Days</span>
+              <span className="text-text-muted font-black text-xs uppercase tracking-tighter">Days</span>
             </div>
           </div>
 
@@ -322,7 +342,7 @@ export default function ProgrammingLanguages() {
               Code Problems
             </h3>
             {loadingProblems ? (
-              <div className="py-10 text-center text-slate-400 animate-pulse text-[10px] font-black uppercase tracking-widest">Scanning...</div>
+              <div className="py-10 text-center text-text-muted animate-pulse text-[10px] font-black uppercase tracking-widest">Scanning...</div>
             ) : (
               <ul className={styles.problemsList}>
                 {problems.map((problem) => (
@@ -335,9 +355,9 @@ export default function ProgrammingLanguages() {
                       {problem.completed ? (
                         <CheckCircle2 size={14} className="text-emerald-500" />
                       ) : (
-                        <div className="w-2 h-2 rounded-full bg-slate-200"></div>
+                        <div className="w-2 h-2 rounded-full bg-border"></div>
                       )}
-                      <span className="text-xs font-bold text-slate-700 truncate max-w-[120px]">{problem.title}</span>
+                      <span className="text-xs font-bold text-text-primary truncate max-w-[120px]">{problem.title}</span>
                     </div>
                     <span className={`${styles.difficultyBadge} ${styles[`difficulty${problem.difficulty}`]}`}>
                       {problem.difficulty}

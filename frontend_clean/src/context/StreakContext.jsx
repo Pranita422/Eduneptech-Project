@@ -1,6 +1,6 @@
-//StreakContext.jsx
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { API_BASE_URL } from "../data/dashboardData";
+import { useAuth } from "./AuthContext";
+import API from "../api/axios";
 
 const StreakContext = createContext();
 
@@ -9,26 +9,24 @@ export const useStreak = () => {
 };
 
 export const StreakProvider = ({ children }) => {
+    const { currentUser, loading: authLoading } = useAuth();
     const [streak, setStreak] = useState(0);
+    const [longestStreak, setLongestStreak] = useState(0);
+    const [lastSolvedDate, setLastSolvedDate] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const fetchStreak = async () => {
+        if (!currentUser) {
+            setLoading(false);
+            return;
+        }
+
         try {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                setLoading(false);
-                return;
-            }
-
-            const response = await fetch(`${API_BASE_URL}/streak`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setStreak(data.streak);
+            const response = await API.get("/streak");
+            if (response.data.streak !== undefined) {
+                setStreak(response.data.streak);
+                setLongestStreak(response.data.longestStreak || 0);
+                setLastSolvedDate(response.data.lastSolvedDate);
             }
         } catch (error) {
             console.error("Error fetching streak:", error);
@@ -38,30 +36,16 @@ export const StreakProvider = ({ children }) => {
     };
 
     const updateStreakActivity = async (activityDescription) => {
+        if (!currentUser) return;
+
         try {
-            const token = localStorage.getItem("token");
-            const userStr = localStorage.getItem("user");
-
-            if (!token || !userStr) return;
-
-            const user = JSON.parse(userStr);
-
-            // Optimistic update (optional, but let's stick to server source for now to avoid drift)
-            // or we could increment locally if we trust the logic
-
-            const response = await fetch(`${API_BASE_URL}/streak/update`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({ userId: user.id, activity: activityDescription })
+            const response = await API.post("/streak/update", {
+                activity: activityDescription
             });
 
-            if (response.ok) {
-                const data = await response.json();
-                setStreak(data.streak); // Update state from server response
-                return data;
+            if (response.status === 200) {
+                setStreak(response.data.streak);
+                return response.data;
             }
         } catch (error) {
             console.error("Error updating streak:", error);
@@ -69,11 +53,26 @@ export const StreakProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        fetchStreak();
-    }, []);
+        if (!authLoading) {
+            fetchStreak();
+        }
+    }, [currentUser, authLoading]);
+
+    // Expose a refresh function that can be called from anywhere
+    const refreshStreak = async () => {
+        await fetchStreak();
+    };
 
     return (
-        <StreakContext.Provider value={{ streak, loading, fetchStreak, updateStreakActivity }}>
+        <StreakContext.Provider value={{
+            streak,
+            longestStreak,
+            lastSolvedDate,
+            loading,
+            fetchStreak,
+            updateStreakActivity,
+            refreshStreak  // New: allows components to manually refresh streak
+        }}>
             {children}
         </StreakContext.Provider>
     );

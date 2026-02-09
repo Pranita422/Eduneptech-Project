@@ -42,7 +42,7 @@ function RoadmapSection({ title }) {
 
     return (
         <section className="animate-in fade-in slide-in-from-top-10 duration-700">
-            <h2 className="text-3xl font-bold mb-8 text-violet-800 border-b-2 border-violet-100 pb-2">
+            <h2 className="text-3xl font-bold mb-8 text-primary border-b-2 border-border pb-2">
                 🧭 {title}
             </h2>
 
@@ -50,21 +50,21 @@ function RoadmapSection({ title }) {
                 {cards.map((card, i) => (
                     <div
                         key={i}
-                        className="group bg-white rounded-[2rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 border border-gray-100 flex flex-col justify-between"
+                        className="group bg-surface rounded-[2rem] p-8 shadow-sm hover:shadow-2xl transition-all duration-500 border border-border flex flex-col justify-between"
                     >
                         <div>
                             <div className={`w-14 h-14 bg-${card.accent}-50 text-${card.accent}-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform`}>
                                 {card.title.split(' ')[0]}
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                            <h3 className="text-2xl font-bold text-text-primary mb-4">
                                 {card.title.split(' ').slice(1).join(' ')}
                             </h3>
-                            <p className="text-gray-600 leading-relaxed mb-8">
+                            <p className="text-text-secondary leading-relaxed mb-8">
                                 {card.desc}
                             </p>
                         </div>
 
-                        <button className="flex items-center text-violet-600 font-bold group/btn hover:text-violet-800 transition-colors">
+                        <button className="flex items-center text-primary font-bold group/btn hover:text-primary-fg transition-colors">
                             {card.btn}
                             <span className="ml-2 group-hover/btn:translate-x-2 transition-transform">→</span>
                         </button>

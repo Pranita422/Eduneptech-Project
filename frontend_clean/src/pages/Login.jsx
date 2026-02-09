@@ -1,9 +1,12 @@
-// src/pages/Login.jsx
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { updateProfile } from "firebase/auth";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login, signup, googleLogin, currentUser } = useAuth();
 
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
@@ -11,54 +14,58 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // 🔐 If already logged in → dashboard
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
+  useEffect(() => {
+    if (currentUser) {
+      navigate("/dashboard");
+    }
+  }, [currentUser, navigate]);
+
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      setMessage(location.state.successMessage);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      await googleLogin();
+      navigate("/dashboard");
+    } catch (err) {
+      setError("Failed to sign in with Google: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
-
-    const url = isLogin
-      ? "http://localhost:5000/api/auth/login"
-      : "http://localhost:5000/api/auth/register";
-
-    const bodyData = isLogin
-      ? { email, password }
-      : { name, email, password };
+    setLoading(true);
 
     try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyData),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.message || "Invalid credentials");
-        return;
-      }
-
       if (isLogin) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user)); // Store user details
+        await login(email, password);
         navigate("/dashboard");
       } else {
+        const userCredential = await signup(email, password);
+        await updateProfile(userCredential.user, { displayName: name });
         setMessage("Registration successful. Please login.");
         setIsLogin(true);
         setName("");
         setEmail("");
         setPassword("");
       }
-    } catch {
-      setError("Server not responding. Try again later.");
+    } catch (err) {
+      console.error(err);
+      setError(err.message.replace("Firebase: ", ""));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,7 +133,7 @@ const Login = () => {
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-300"
+                  className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-semibold text-slate-900 placeholder:text-slate-400"
                   required
                 />
               </div>
@@ -139,28 +146,36 @@ const Login = () => {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-300"
+                className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-semibold text-slate-900 placeholder:text-slate-400"
                 required
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Password</label>
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Password</label>
+                {isLogin && (
+                  <Link to="/forgot-password" size="sm" className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 transition-colors uppercase tracking-wider">
+                    Forgot Password?
+                  </Link>
+                )}
+              </div>
               <input
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-300"
+                className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-semibold text-slate-900 placeholder:text-slate-400"
                 required
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300/50 transition-all active:scale-[0.98]"
+              disabled={loading}
+              className={`w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300/50 transition-all ${loading ? "opacity-50 cursor-not-allowed" : "active:scale-[0.98]"}`}
             >
-              {isLogin ? "Sign In" : "Create Account"}
+              {loading ? "Processing..." : (isLogin ? "Sign In" : "Create Account")}
             </button>
           </form>
 
@@ -173,7 +188,11 @@ const Login = () => {
             </div>
           </div>
 
-          <button className="w-full flex items-center justify-center gap-3 bg-slate-50 border border-slate-200 py-3 rounded-xl hover:bg-slate-100 transition-colors group">
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className={`w-full flex items-center justify-center gap-3 bg-slate-50 border border-slate-200 py-3 rounded-xl hover:bg-slate-100 transition-colors group ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
             <img
               src="https://img.icons8.com/color/48/google-logo.png"
               alt="Google"

@@ -1,23 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import ProgressBar from './ProgressBar';
 import StreakCard from './StreakCard';
-import { API_BASE_URL } from '../../data/dashboardData';
+import API from '../../api/axios';
+import { useAuth } from '../../context/AuthContext';
 
 const ProgressSection = () => {
+    const { currentUser } = useAuth();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchProgress = async () => {
+            if (!currentUser) return;
             try {
-                const token = localStorage.getItem("token");
-                const res = await fetch(`${API_BASE_URL}/progress/dashboard`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setStats(data);
-                }
+                const res = await API.get("/progress/dashboard");
+                setStats(res.data);
             } catch (error) {
                 console.error("Error fetching progress:", error);
             } finally {
@@ -26,7 +23,7 @@ const ProgressSection = () => {
         };
 
         fetchProgress();
-    }, []);
+    }, [currentUser]);
 
     if (loading) return <div className="p-4">Loading progress...</div>;
 
@@ -98,7 +95,7 @@ const ProgressSection = () => {
                         {recentActivity.length > 0 ? (
                             recentActivity.map((sub) => (
                                 <div key={sub._id} className="flex gap-4 relative">
-                                    <div className={`w-[24px] h-[24px] rounded-full border-4 border-white shadow-sm flex items-center justify-center shrink-0 z-10 ${sub.result === 'Accepted' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+                                    <div className={`w - [24px] h - [24px] rounded - full border - 4 border - white shadow - sm flex items - center justify - center shrink - 0 z - 10 ${sub.result === 'Accepted' ? 'bg-emerald-500' : 'bg-rose-500'} `}>
                                         <div className="w-1 h-1 bg-white rounded-full"></div>
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -106,7 +103,7 @@ const ProgressSection = () => {
                                             <p className="text-xs font-bold text-slate-800 truncate pr-2">{sub.problemId?.title || "Unknown Task"}</p>
                                             <span className="text-[9px] font-black text-slate-400 uppercase shrink-0">{new Date(sub.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                                         </div>
-                                        <p className={`text-[10px] font-bold mt-0.5 ${sub.result === 'Accepted' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                        <p className={`text - [10px] font - bold mt - 0.5 ${sub.result === 'Accepted' ? 'text-emerald-500' : 'text-rose-500'} `}>
                                             {sub.result}
                                         </p>
                                     </div>

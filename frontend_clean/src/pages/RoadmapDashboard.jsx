@@ -26,7 +26,11 @@ const RoadmapDashboard = () => {
     return (
         <div className={styles.container}>
             <header style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>←</button>
+                <button
+                    onClick={() => navigate(-1)}
+                    style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}
+                    className="text-text-muted hover:text-text-primary transition-colors"
+                >←</button>
                 <h1 className={styles.title} style={{ margin: 0, textAlign: 'left' }}>Learning Roadmaps</h1>
             </header>
 
