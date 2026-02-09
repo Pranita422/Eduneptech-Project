@@ -6,7 +6,7 @@
 
 .title {
     font-size: 3rem;
-    color: #0f172a;
+    color: rgb(var(--text-primary));
     margin-bottom: 3rem;
     text-align: left;
     font-weight: 900;
@@ -22,14 +22,14 @@
 }
 
 .card {
-    background: white;
+    background: rgb(var(--surface));
     border-radius: 2rem;
     padding: 3rem;
     text-align: center;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
-    border: 1px solid #e2e8f0;
+    border: 1px solid rgb(var(--border));
     text-decoration: none;
     color: inherit;
     display: flex;
@@ -60,12 +60,12 @@
 .cardTitle {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #0f172a;
+    color: rgb(var(--text-primary));
     margin-bottom: 1rem;
 }
 
 .cardDesc {
-    color: #64748b;
+    color: rgb(var(--text-secondary));
     line-height: 1.7;
     font-size: 0.9375rem;
 }
@@ -112,9 +112,9 @@
 }
 
 .stepNode {
-    background: white;
+    background: rgb(var(--surface));
     border-radius: 1.5rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid rgb(var(--border));
     padding: 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     transition: all 0.3s;
@@ -131,8 +131,8 @@
 }
 
 .nodeIcon {
-    background: #f5f7ff;
-    color: #4f46e5;
+    background: rgb(var(--surface-highlight));
+    color: rgb(var(--primary));
     width: 4rem;
     height: 4rem;
     display: flex;
@@ -152,14 +152,14 @@
 
 .nodeCard h3 {
     margin: 0 0 0.5rem 0;
-    color: #0f172a;
+    color: rgb(var(--text-primary));
     font-size: 1.25rem;
     font-weight: 800;
 }
 
 .nodeCard p {
     margin: 0;
-    color: #64748b;
+    color: rgb(var(--text-secondary));
     font-size: 1rem;
     line-height: 1.6;
 }
@@ -181,4 +181,235 @@
     background: #4f46e5;
     color: white;
     box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+}
+
+.backBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: rgb(var(--text-secondary));
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 700;
+    transition: all 0.2s;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(var(--border));
+    background: rgb(var(--surface));
+    width: fit-content;
+    margin-bottom: 2rem;
+    cursor: pointer;
+}
+
+.backBtn:hover {
+    background: rgb(var(--surface-highlight));
+    color: rgb(var(--primary));
+    transform: translateX(-4px);
+    border-color: rgb(var(--primary));
+}
+
+/* Aptitude Test Workspace Styles */
+.testCard {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgb(var(--surface));
+    padding: 3rem;
+    border-radius: 2rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(var(--border));
+}
+
+.questionText {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: rgb(var(--text-primary));
+    margin-bottom: 2rem;
+    line-height: 1.4;
+    font-family: 'Outfit', sans-serif;
+}
+
+.optionsGrid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+
+.optionBtn {
+    padding: 1.25rem;
+    border: 2px solid rgb(var(--border-highlight));
+    background: rgb(var(--surface));
+    border-radius: 1rem;
+    text-align: left;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    color: rgb(var(--text-secondary));
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.optionBtn:hover {
+    border-color: rgb(var(--primary));
+    background: rgb(var(--surface-highlight));
+    color: rgb(var(--primary));
+    transform: translateX(4px);
+}
+
+.optionSelected {
+    border-color: rgb(var(--primary));
+    background: rgba(var(--primary), 0.1);
+    color: rgb(var(--primary));
+    box-shadow: 0 0 0 4px rgba(var(--primary), 0.1);
+}
+
+.resultCard {
+    background: rgb(var(--surface));
+    padding: 3rem;
+    border-radius: 2rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgb(var(--border));
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.resultHeader {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.testHeader {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgb(var(--border));
+}
+
+.footerAction {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.primaryBtn {
+    background: rgb(var(--primary));
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 10px 15px -3px rgba(var(--primary), 0.3);
+}
+
+.secondaryBtn {
+    background: rgb(var(--surface-highlight));
+    color: rgb(var(--text-secondary));
+    border: 1px solid rgb(var(--border));
+    padding: 1rem 2rem;
+    border-radius: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+/* Assessment Palette Layout */
+.testLayout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+    .testLayout {
+        flex-direction: column;
+    }
+}
+
+.paletteContainer {
+    background: rgb(var(--surface));
+    padding: 2rem;
+    border-radius: 2rem;
+    border: 1px solid rgb(var(--border));
+    width: 350px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .paletteContainer {
+        width: 100%;
+        position: static;
+    }
+}
+
+.paletteTitle {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: rgb(var(--text-primary));
+}
+
+.paletteGrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.75rem;
+}
+
+.paletteCircle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    background: rgb(var(--surface-highlight));
+    color: rgb(var(--text-secondary));
+}
+
+.paletteCircle:hover {
+    transform: scale(1.1);
+    border-color: rgb(var(--primary));
+}
+
+.activeCircle {
+    border-color: rgb(var(--primary));
+    box-shadow: 0 0 0 2px rgba(var(--primary), 0.2);
+    font-weight: 900;
+}
+
+.attempted {
+    background: #10b981;
+    color: white;
+}
+
+.skipped {
+    background: #f59e0b;
+    color: white;
+}
+
+.unvisited {
+    background: rgb(var(--surface-highlight));
+    color: rgb(var(--text-muted));
+}
+
+/* Update existing testCard to remove margin auto when in layout */
+.testCardLayout {
+    flex: 1;
+    margin: 0;
 }

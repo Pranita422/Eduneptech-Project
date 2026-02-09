@@ -29,11 +29,17 @@ const RoadmapView = () => {
 
     return (
         <div className={styles.container}>
+            <button
+                onClick={() => navigate('/dashboard/roadmaps')}
+                className={styles.backBtn}
+            >
+                ← Back to Journeys
+            </button>
+
             <header style={{ marginBottom: '3rem', textAlign: 'center' }}>
-                <button onClick={() => navigate('/dashboard/roadmaps')} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', float: 'left', color: '#6b7280' }}>← Back</button>
                 <div>
-                    <h1 className={styles.title} style={{ margin: 0, fontSize: '2.5rem', color: '#4c1d95' }}>{roadmap.title}</h1>
-                    <p style={{ color: '#6b7280', fontSize: '1.1rem', marginTop: '0.5rem' }}>{roadmap.description}</p>
+                    <h1 className={styles.title} style={{ margin: 0, fontSize: '2.5rem', color: 'rgb(var(--text-primary))' }}>{roadmap.title}</h1>
+                    <p style={{ color: 'rgb(var(--text-secondary))', fontSize: '1.1rem', marginTop: '0.5rem' }}>{roadmap.description}</p>
                 </div>
             </header>
 
