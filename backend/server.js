@@ -27,11 +27,18 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/auth", require("./routes/authRoutes"));
+console.log("Registered: /api/auth");
+app.use("/api/edubot", require("./routes/edubotRoutes"));
+console.log("Registered: /api/edubot");
 // app.use("/api/user", require("./routes/userRoutes"));
 app.use("/api/nep", require("./routes/nepRoutes"));
+console.log("Registered: /api/nep");
 app.use("/api/mcqs", require("./routes/mcqRoutes"));
-app.use("/api", require("./routes/topicRoutes"));
+console.log("Registered: /api/mcqs");
 app.use("/api/streak", require("./routes/streakRoutes"));
+console.log("Registered: /api/streak");
+app.use("/api", require("./routes/topicRoutes"));
+console.log("Registered: /api (topicRoutes)");
 app.use("/api/problems", require("./routes/problemRoutes"));
 app.use("/api/aptitude", require("./routes/aptitudeRoutes"));
 app.use("/api/roadmaps", require("./routes/roadmapRoutes"));
@@ -39,6 +46,8 @@ app.use("/api/notes", require("./routes/noteRoutes"));
 app.use("/api/certificates", require("./routes/certificateRoutes"));
 app.use("/api/progress", require("./routes/progressRoutes"));
 app.use("/api/submissions", require("./routes/submissionRoutes"));
+app.use("/api/payment", require("./routes/paymentRoutes"));
+console.log("Registered: /api/payment");
 
 // Serve uploaded files statically
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
